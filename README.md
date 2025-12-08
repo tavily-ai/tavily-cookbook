@@ -20,6 +20,13 @@ If you're new to working with the Tavily API, we recommend starting with our [Ta
 - [Profile Search](./search/linkedin_profile_search.ipynb): Learn how to search and extract professional background information from LinkedIn profiles.
 - [Product News Tracker](./search/product_news_tracker.ipynb): Monitor and collect product-related news using time-filtered and specialized news search capabilities
 
+### Research
+- [Polling](./research/polling.ipynb): Make a deep research call and poll for the response until completion.
+- [Streaming](./research/streaming.ipynb): Stream progress notes and answer generation in real-time during deep research.
+- [Structured Output](./research/structured_output.ipynb): Get deep research results formatted according to a custom output schema.
+- [Clarification](./research/clarification.ipynb): Use multi-turn clarification to refine the research prompt before executing.
+- [Hybrid Research](./research/hybrid_research.ipynb): Learn to combine Tavily Deep Research with your internal data sources for comprehensive results.
+
 ### Crawl
 - [Getting Started](./crawl/getting_started.ipynb): Learn the fundamentals of web crawling with Tavily's crawl and map endpoints, including URL discovery, recursive navigation, and content extraction.
 - [Crawl to RAG](./crawl/crawl_to_rag.ipynb): Build a complete RAG system by crawling websites and converting content into a searchable knowledge base with vector embeddings and question-answering capabilities.
