@@ -21,6 +21,7 @@ If you're new to working with the Tavily API, we recommend starting with our [Ta
 - [Product News Tracker](./search/product_news_tracker.ipynb): Monitor and collect product-related news using time-filtered and specialized news search capabilities
 
 ### Research
+> **Note:** Research is our newest API offering! Features and capabilities are evolving rapidly. For detailed usage and the latest updates, see the [Research API Reference](https://docs.tavily.com/documentation/api-reference/endpoint/research).
 - [Polling](./research/polling.ipynb): Asynchronous polling for background research requests.
 - [Streaming](./research/streaming.ipynb): Stream real-time progress and answers during research.
 - [Structured Output](./research/structured_output.ipynb): Get results in custom schema formats.
