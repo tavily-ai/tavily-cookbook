@@ -21,11 +21,11 @@ If you're new to working with the Tavily API, we recommend starting with our [Ta
 - [Product News Tracker](./search/product_news_tracker.ipynb): Monitor and collect product-related news using time-filtered and specialized news search capabilities
 
 ### Research
-- [Polling](./research/polling.ipynb): Make a deep research call and poll for the response until completion.
-- [Streaming](./research/streaming.ipynb): Stream progress notes and answer generation in real-time during deep research.
-- [Structured Output](./research/structured_output.ipynb): Get deep research results formatted according to a custom output schema.
-- [Clarification](./research/clarification.ipynb): Use multi-turn clarification to refine the research prompt before executing.
-- [Hybrid Research](./research/hybrid_research.ipynb): Learn to combine Tavily Deep Research with your internal data sources for comprehensive results.
+- [Polling](./research/polling.ipynb): Asynchronous polling for background research requests.
+- [Streaming](./research/streaming.ipynb): Stream real-time progress and answers during research.
+- [Structured Output](./research/structured_output.ipynb): Get results in custom schema formats.
+- [Clarification](./research/clarification.ipynb): Refine user prompts through multi-turn clarification before research.
+- [Hybrid Research](./research/hybrid_research.ipynb): Combine Tavily research with your internal data.
 
 ### Crawl
 - [Getting Started](./crawl/getting_started.ipynb): Learn the fundamentals of web crawling with Tavily's crawl and map endpoints, including URL discovery, recursive navigation, and content extraction.
