@@ -4,7 +4,7 @@ The Tavily Cookbook provides code and guides designed to help developers build w
 
 ## Prerequisites
 
-**Sign up** for Tavily at [app.tavily.com](https://app.tavily.com/home/?utm_source=github&utm_medium=referral&utm_campaign=nir_diamant) to get your API key.
+**Sign up** for Tavily at [app.tavily.com](https://app.tavily.com/home/) to get your API key.
 
 While the code examples are primarily written in Python, the concepts can be adapted to any programming language that supports interaction with the Tavily API.
 
