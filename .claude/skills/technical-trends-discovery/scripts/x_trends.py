@@ -23,24 +23,40 @@ DEFAULT_HANDLES = [
     "rlancemartin",   # Lance Martin (LangChain)
     "simonw",         # Simon Willison
     "karpathy",       # Andrej Karpathy
-    "chipro",         # Chip Huyen
-    "jerryjliu0",     # Jerry Liu (LlamaIndex)
-    "maaborber",      # Boris Cherny
-    "swyx",           # Swyx
+    "bcherny",      # Boris Cherny
+    "swyx",
+    "alexalbert__"
 ]
 
 DEFAULT_PROMPT = """Analyze the recent posts from these AI thought leaders and identify:
 
 1. **Top 2-3 Emerging Trends** - What topics are multiple people discussing?
 2. **Key Insights** - Novel ideas, patterns, or frameworks mentioned
-3. **Tools & Libraries** - Any specific tools or projects highlighted
+3. **Tools & Libraries** - Any specific tools or projects highlighted?
 
-Be specific and cite which thought leader mentioned what."""
+Be specific and cite which thought leader mentioned what. Keep the output brief and concise.
+Output the trends in a structured format:
+
+#Trends
+##libraries and tools mentioned
+##key insights (very brief)
+##who said what
+
+#Trends
+##libraries and tools mentioned
+##key insights (very brief)
+##who said what
+
+#Trends
+##libraries and tools mentioned
+##key insights (very brief)
+##who said what
+"""
 
 
 def search_x_trends(
     handles: list[str] = None,
-    days_back: int = 30,
+    days_back: int = 20,
     prompt: str = None,
     min_favorites: int = 100,
 ) -> dict:
