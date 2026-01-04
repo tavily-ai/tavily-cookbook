@@ -206,5 +206,6 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-# Trend research outputs (keep .gitkeep)
+# Research outputs
+research/
 .claude/skills/technical-trends-discovery/research/*.json

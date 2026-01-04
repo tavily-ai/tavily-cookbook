@@ -8,6 +8,15 @@ Uses xAI Live Search API to find trends from AI thought leaders on X.
 import argparse
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
+
+# Load .env file from repo root
+try:
+    from dotenv import load_dotenv
+    repo_root = Path(__file__).resolve().parents[4]
+    load_dotenv(repo_root / ".env")
+except ImportError:
+    pass  # dotenv not installed, rely on environment variables
 
 try:
     from xai_sdk import Client
@@ -28,29 +37,33 @@ DEFAULT_HANDLES = [
     "alexalbert__"
 ]
 
-DEFAULT_PROMPT = """Analyze the recent posts from these AI thought leaders and identify:
+DEFAULT_PROMPT = """Analyze the recent posts from these AI thought leaders. Focus on ACTIONABLE information for AI developers - briefly mention high-level trends, but focus on specific things they can use today.
 
-1. **Top 2-3 Emerging Trends** - What topics are multiple people discussing?
-2. **Key Insights** - Novel ideas, patterns, or frameworks mentioned
-3. **Tools & Libraries** - Any specific tools or projects highlighted?
+Extract and organize:
 
-Be specific and cite which thought leader mentioned what. Keep the output brief and concise.
-Output the trends in a structured format:
+## Libraries & Tools
+List specific libraries, frameworks, SDKs, or tools mentioned with:
+- Name and link (links are very valuable all relevant links should be included!!)
+- Who mentioned it
 
-#Trends
-##libraries and tools mentioned
-##key insights (very brief)
-##who said what
+## Code Patterns & Techniques
+Specific implementation patterns, prompts, or techniques shared:
+- The pattern/technique
+- Code snippets or examples if shared
+- Who shared it
 
-#Trends
-##libraries and tools mentioned
-##key insights (very brief)
-##who said what
+## Docs & Resources
+Links to documentation, tutorials, papers, or repos mentioned:
+- Resource name and URL
+- Why it's useful
+- Who recommended it
 
-#Trends
-##libraries and tools mentioned
-##key insights (very brief)
-##who said what
+## Hot Takes & Insights
+Brief, opinionated takes worth noting (1-2 sentences each):
+- The insight
+- Who said it
+
+Prioritize specificity over comprehensiveness. A single useful library link is worth more than a paragraph about "the rise of agents."
 """
 
 
