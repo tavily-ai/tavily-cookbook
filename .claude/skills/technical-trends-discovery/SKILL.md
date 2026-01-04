@@ -10,15 +10,28 @@ Research emerging technical trends from industry thought leaders using Tavily Re
 ## Usage
 
 ```bash
-# Run with default prompt
-python scripts/research_trends.py
+# Run research (saves to research/trends_<timestamp>/ directory at repo root)
+python .claude/skills/technical-trends-discovery/scripts/research_trends.py
 
-# Custom topic focus
-python scripts/research_trends.py --topic "AI agents"
+# Custom output directory
+python .claude/skills/technical-trends-discovery/scripts/research_trends.py -o research/custom_name
 
-# Save to file
-python scripts/research_trends.py -o trends.json
+# Print only, don't save
+python .claude/skills/technical-trends-discovery/scripts/research_trends.py --no-save
 ```
+
+## Output Format
+
+Results are saved to `research/` at the repo root in timestamped directories:
+
+```
+research/
+└── trends_2025-01-04_143022/
+    ├── report.md      # Full research report in markdown
+    └── sources.json   # Source citations (url + title)
+```
+
+This format makes reports easy to visualize in markdown viewers while keeping sources organized alongside.
 
 ## How It Works
 
@@ -63,21 +76,8 @@ while True:
     time.sleep(5)
 ```
 
-## Customization
-
-Modify the research prompt to focus on specific areas:
-
-```python
-# Focus on a specific domain
-result = client.research(
-    input="""Research the latest trends in LLM evaluation and testing.
-    What frameworks are gaining traction? What patterns are thought leaders
-    recommending for production agent evaluation?""",
-    model="pro"
-)
-```
-
 ## Resources
 
 ### scripts/
-- `research_trends.py` - CLI tool for trend research
+- `research_trends.py` - CLI tool for Tavily trend research
+- `x_trends.py` - CLI tool for X/Twitter trend search via xAI API
