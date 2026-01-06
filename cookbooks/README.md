@@ -20,7 +20,7 @@ If you're new to working with the Tavily API, we recommend starting with our [Ta
 - [Polling](./research/polling.ipynb): Asynchronous polling for background research requests.
 - [Streaming](./research/streaming.ipynb): Stream real-time progress and answers during research.
 - [Structured Output](./research/structured_output.ipynb): Get results in custom schema formats.
-- [Clarification](./research/clarification.ipynb): Refine user prompts through multi-turn clarification before research.
+- [Query Refinement](./research/query_refinement.ipynb): Refine user prompts through multi-turn clarification before research.
 - [Hybrid Research](./research/hybrid_research.ipynb): Combine Tavily research with your internal data.
 
 ### Crawl

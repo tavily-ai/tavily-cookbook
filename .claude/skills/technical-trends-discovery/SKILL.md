@@ -31,10 +31,10 @@ python .claude/skills/technical-trends-discovery/scripts/discover_trends.py \
 
 ## Output Format
 
-Results are saved to `research/` at the repo root:
+Results are saved to `trends-reports/` at the repo root:
 
 ```
-research/
+trends-reports/
 └── trends_2025-01-04_143022/
     ├── x_discovery.md   # What thought leaders are discussing
     ├── report.md        # Deep research report
