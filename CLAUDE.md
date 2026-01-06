@@ -56,7 +56,7 @@ async_client = AsyncTavilyClient()  # For parallel queries
 
 ### Key Patterns
 
-**Search**: Use `search_depth="advanced"` with `chunks_per_source=5` for best quality (2s latency tradeoff). Use `AsyncTavilyClient` for parallel queries in agentic workflows.
+**Search**: Use `search_depth="advanced"` with `chunks_per_source=5` for best quality (2s latency tradeoff). Use `AsyncTavilyClient` for parallel queries in agentic workflows. Use `search_depth="fast"` or `"ultrafast"` only for latency-critical applications where response time is the primary concern.
 
 **Extract**: Two-step pattern recommended - search first, filter by `score > 0.5`, then extract filtered URLs.
 
