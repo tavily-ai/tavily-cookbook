@@ -25,7 +25,7 @@ Keep queries concise (just a few words). Break complex searches into smaller, fo
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `query` | string | Required | The search query to execute |
-| `search_depth` | enum | `"basic"` | `"basic"` (1 snippet/URL) or `"advanced"` (multiple semantic snippets/URL, 2 credits) |
+| `search_depth` | enum | `"basic"` | `"basic"` (1 snippet/URL), `"advanced"` (multiple semantic snippets/URL, 2 credits), `"fast"`, or `"ultrafast"` |
 | `chunks_per_source` | integer | 3 | Max relevant chunks per source (1-3, advanced depth only) |
 | `max_results` | integer | 5 | Maximum results to return (0-20) |
 | `time_range` | enum | null | `"day"`, `"week"`, `"month"`, `"year"` |
@@ -46,6 +46,8 @@ Keep queries concise (just a few words). Break complex searches into smaller, fo
 - **`include_answer`**: Only use this if the user explicitly does not want to bring their own LLM for inference. Most users bring their own model to customize prompts and model selection.
 
 - **`search_depth="advanced"`**: Provides the best quality results at the cost of ~2s additional latency. For use cases that can tolerate added latency, using `search_depth="advanced"` with `chunks_per_source=5` yields significant performance gains in downstream tasks.
+
+- **`search_depth="fast"` / `"ultrafast"`**: These depths trade result quality for lower latency. **Only use these for latency-critical applications** where response time is the primary concern (e.g., real-time chat, autocomplete, time-sensitive trading signals). For most use cases, prefer `"basic"` or `"advanced"` to ensure higher quality results.
 
 
 ## Basic Usage
