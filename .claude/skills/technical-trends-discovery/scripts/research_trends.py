@@ -27,14 +27,14 @@ except ImportError:
 # Output directory at repo root
 SCRIPT_DIR = Path(__file__).parent
 REPO_ROOT = SCRIPT_DIR.parents[3]  # Go up from scripts/ -> skill/ -> skills/ -> .claude/ -> root
-RESEARCH_DIR = REPO_ROOT / "research"
+TRENDS_REPORTS_DIR = REPO_ROOT / "trends-reports"
 
 
 def get_default_output_dir() -> Path:
-    """Generate timestamped output directory in the research directory."""
-    RESEARCH_DIR.mkdir(exist_ok=True)
+    """Generate timestamped output directory in the trends-reports directory."""
+    TRENDS_REPORTS_DIR.mkdir(exist_ok=True)
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    output_dir = RESEARCH_DIR / f"trends_{timestamp}"
+    output_dir = TRENDS_REPORTS_DIR / f"trends_{timestamp}"
     output_dir.mkdir(exist_ok=True)
     return output_dir
 
@@ -97,7 +97,7 @@ def main():
     )
     parser.add_argument(
         "--output", "-o",
-        help="Output directory path (default: research/trends_<timestamp>/)"
+        help="Output directory path (default: trends-reports/trends_<timestamp>/)"
     )
     parser.add_argument(
         "--no-save",

@@ -26,14 +26,14 @@ except ImportError:
 # Output directory at repo root
 SCRIPT_DIR = Path(__file__).parent
 REPO_ROOT = SCRIPT_DIR.parents[3]
-RESEARCH_DIR = REPO_ROOT / "research"
+TRENDS_REPORTS_DIR = REPO_ROOT / "trends-reports"
 
 
 def get_output_dir() -> Path:
     """Generate timestamped output directory."""
-    RESEARCH_DIR.mkdir(exist_ok=True)
+    TRENDS_REPORTS_DIR.mkdir(exist_ok=True)
     timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    output_dir = RESEARCH_DIR / f"trends_{timestamp}"
+    output_dir = TRENDS_REPORTS_DIR / f"trends_{timestamp}"
     output_dir.mkdir(exist_ok=True)
     return output_dir
 
@@ -270,7 +270,7 @@ def main():
     )
     parser.add_argument(
         "--output", "-o",
-        help="Output directory (default: research/trends_<timestamp>/)"
+        help="Output directory (default: trends-reports/trends_<timestamp>/)"
     )
 
     args = parser.parse_args()
