@@ -6,6 +6,7 @@
 - [Basic Usage](#basic-usage)
 - [Key Parameters](#key-parameters)
 - [Response Fields](#response-fields)
+- [Streaming](#streaming)
 - [Structured Output](#structured-output)
 - [Best Practices](#best-practices)
 
@@ -104,7 +105,6 @@ report = response["content"]
 
 ---
 
-
 ## Structured Output
 
 Use `output_schema` to receive research results in a predefined JSON structure:
@@ -144,6 +144,98 @@ response = client.research(
 - Use `required` arrays to enforce mandatory fields at any nesting level
 
 ---
+
+## Streaming
+
+Enable real-time monitoring of research progress using Server-Sent Events (SSE) by setting `stream=True`.
+
+### Basic Streaming Usage
+
+```python
+from tavily import TavilyClient
+
+client = TavilyClient()
+
+stream = client.research(
+    input="Latest developments in quantum computing",
+    model="pro",
+    stream=True
+)
+
+for chunk in stream:
+    print(chunk.decode('utf-8'))
+```
+
+### Event Structure
+
+All streaming events follow this format:
+
+```json
+{
+  "id": "unique-identifier",
+  "object": "chat.completion.chunk",
+  "model": "mini|pro",
+  "created": 1705329000,
+  "choices": [{"delta": {...}}]
+}
+```
+
+### Streaming Event Types
+
+| Event Type | Description |
+|------------|-------------|
+| **Tool Call** | Emitted when agent initiates actions (Planning, WebSearch, etc.) |
+| **Tool Response** | Returned after tool execution with results and sources |
+| **Content** | Research report streamed as markdown chunks (or structured objects with `output_schema`) |
+| **Sources** | Complete list of all sources used, emitted after content |
+| **Done** | Signals completion (`event: done`) |
+
+### Tool Types
+
+| Tool | Description | Models |
+|------|-------------|--------|
+| `Planning` | Initializes research strategy | mini, pro |
+| `WebSearch` | Executes web searches | mini, pro |
+| `Generating` | Creates final report | mini, pro |
+| `ResearchSubtopic` | Deep research on subtopics | pro only |
+
+### Typical Research Flow
+
+1. `Planning` tool_call → tool_response
+2. `WebSearch` tool_call (with queries array) → tool_response (with sources)
+3. `ResearchSubtopic` cycles (Pro mode only)
+4. `Generating` tool_call → tool_response
+5. `Content` event chunks (markdown or structured JSON)
+6. `Sources` event (complete source list)
+7. `Done` event
+
+### Streaming with Structured Output
+
+When `output_schema` is provided, content arrives as structured objects:
+
+```python
+schema = {
+    "properties": {
+        "summary": {"type": "string", "description": "Executive summary"},
+        "key_points": {"type": "array", "items": {"type": "string"}}
+    },
+    "required": ["summary", "key_points"]
+}
+
+stream = client.research(
+    input="AI agent frameworks comparison",
+    model="mini",
+    stream=True,
+    output_schema=schema
+)
+
+for chunk in stream:
+    data = chunk.decode('utf-8')
+    # Content chunks will be structured JSON matching schema
+    print(data)
+```
+
+
 
 ## Best Practices
 

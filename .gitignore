@@ -6,6 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
+research/
 # Distribution / packaging
 .Python
 build/
@@ -205,3 +206,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Research outputs
+research/
+.claude/skills/technical-trends-discovery/research/*.json
