@@ -484,6 +484,10 @@ Focus on practical migration steps developers need to take."""
     while (time.monotonic() - start_time) < max_wait:
         try:
             response = client.get_research(request_id)
+            # Validate response is a dict before accessing it
+            if not isinstance(response, dict):
+                logger.error(f"Invalid response type for {package_name}: {type(response).__name__}")
+                return {"status": "failed", "package": package_name, "error": f"Invalid response type: {type(response).__name__}"}
         except Exception as e:
             logger.error(f"Failed to get research status for {package_name}: {e}")
             return {"status": "failed", "package": package_name, "error": str(e)}
@@ -658,7 +662,8 @@ def print_results(results: list[dict]):
             print(f"   Summary: {summary}")
 
         if r.get("risk_explanation"):
-            print(f"   {r['risk_explanation'][:100]}...")
+            risk_explanation = r["risk_explanation"][:100] + "..." if len(r["risk_explanation"]) > 100 else r["risk_explanation"]
+            print(f"   {risk_explanation}")
 
         if r.get("breaking_changes"):
             print(f"\n   Breaking Changes:")
