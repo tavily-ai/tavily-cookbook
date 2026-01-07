@@ -394,11 +394,15 @@ def validate_research_response(data: dict) -> dict:
         validated["summary"] = data["summary"]
 
     # Validate risk_level
-    risk = data.get("risk_level", "").upper()
-    if risk in ("LOW", "MEDIUM", "HIGH"):
-        validated["risk_level"] = risk
-    elif data.get("risk_level"):
-        logger.warning(f"Invalid risk_level '{data.get('risk_level')}', using UNKNOWN")
+    risk_value = data.get("risk_level")
+    if isinstance(risk_value, str):
+        risk = risk_value.upper()
+        if risk in ("LOW", "MEDIUM", "HIGH"):
+            validated["risk_level"] = risk
+        else:
+            logger.warning(f"Invalid risk_level '{risk_value}', using UNKNOWN")
+    elif risk_value is not None:
+        logger.warning(f"risk_level is not a string: {type(risk_value).__name__}, using UNKNOWN")
 
     # Validate risk_explanation
     if isinstance(data.get("risk_explanation"), str):
@@ -476,8 +480,8 @@ Focus on practical migration steps developers need to take."""
         logger.error(f"Failed to start research for {package_name}: {e}")
         return {"status": "failed", "package": package_name, "error": str(e)}
 
-    elapsed = 0
-    while elapsed < max_wait:
+    start_time = time.monotonic()
+    while (time.monotonic() - start_time) < max_wait:
         try:
             response = client.get_research(request_id)
         except Exception as e:
@@ -516,9 +520,9 @@ Focus on practical migration steps developers need to take."""
             return {"status": "failed", "package": package_name, "error": error_msg}
 
         time.sleep(poll_interval)
-        elapsed += poll_interval
 
-    logger.warning(f"Research timed out for {package_name} after {max_wait}s")
+    elapsed = time.monotonic() - start_time
+    logger.warning(f"Research timed out for {package_name} after {elapsed:.1f}s")
     return {"status": "timeout", "package": package_name}
 
 
