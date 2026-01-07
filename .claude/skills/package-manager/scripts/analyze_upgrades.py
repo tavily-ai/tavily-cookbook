@@ -337,17 +337,21 @@ class PackageAnalyzer:
             try:
                 data = json.loads(line)
                 if data.get("type") == "table":
-                    # Yarn v1 format
-                    body = data.get("data", {}).get("body", [])
-                    for row in body:
-                        if len(row) >= 4:
-                            packages.append({
-                                "name": row[0],
-                                "current_version": row[1],
-                                "latest_version": row[3],
-                                "package_manager": "yarn",
-                            })
-            except json.JSONDecodeError:
+                    # Yarn v1 format - check that data["data"] is a dict before accessing
+                    data_dict = data.get("data")
+                    if isinstance(data_dict, dict):
+                        body = data_dict.get("body", [])
+                        if isinstance(body, list):
+                            for row in body:
+                                if isinstance(row, list) and len(row) >= 4:
+                                    packages.append({
+                                        "name": row[0],
+                                        "current_version": row[1],
+                                        "latest_version": row[3],
+                                        "package_manager": "yarn",
+                                    })
+            except (json.JSONDecodeError, AttributeError, TypeError, KeyError, IndexError):
+                # Skip malformed lines - continue processing other lines
                 continue
         return packages
 
