@@ -101,8 +101,15 @@ class PackageAnalyzer:
 
     EXCLUDED_DIRS = {"node_modules", "venv", ".venv", "__pycache__", ".git", "dist", "build", ".tox", "env"}
 
-    def __init__(self):
-        self.project_path = Path.cwd()
+    def __init__(self, project_path: Optional[str] = None):
+        if project_path:
+            self.project_path = Path(project_path).resolve()
+            if not self.project_path.exists():
+                raise ValueError(f"Project path does not exist: {project_path}")
+            if not self.project_path.is_dir():
+                raise ValueError(f"Project path is not a directory: {project_path}")
+        else:
+            self.project_path = Path.cwd()
         self.package_manager = None
 
     def detect_package_manager(self) -> Optional[str]:
@@ -143,42 +150,63 @@ class PackageAnalyzer:
     def _find_venv_python(self) -> Optional[str]:
         """Find Python executable in a virtual environment within the project.
         
-        Looks for directories containing pyvenv.cfg or the standard venv structure.
-        Returns the path to the Python executable if found, None otherwise.
+        First checks common venv directory names (venv, .venv, env), then searches
+        all subdirectories for venv structure. Returns the path to the Python executable
+        if found, None otherwise.
         """
-        # Check immediate subdirectories for virtual environments
-        for item in self.project_path.iterdir():
-            if not item.is_dir():
-                continue
-            
-            # Skip excluded directories
-            if item.name in self.EXCLUDED_DIRS:
-                continue
+        def _check_venv_path(venv_path: Path) -> Optional[str]:
+            """Check if a path is a valid virtual environment and return Python executable."""
+            if not venv_path.exists() or not venv_path.is_dir():
+                return None
             
             # Check for pyvenv.cfg (standard marker for Python venv)
-            pyvenv_cfg = item / "pyvenv.cfg"
-            if pyvenv_cfg.exists():
-                # Found a venv, check for Python executable
-                if sys.platform == "win32":
-                    venv_python = item / "Scripts" / "python.exe"
-                else:
-                    venv_python = item / "bin" / "python"
-                
-                if venv_python.exists() and venv_python.is_file():
-                    logger.debug(f"Found virtual environment: {item.name}")
+            pyvenv_cfg = venv_path / "pyvenv.cfg"
+            has_pyvenv_cfg = pyvenv_cfg.exists()
+            
+            # Check for Python executable
+            if sys.platform == "win32":
+                venv_python = venv_path / "Scripts" / "python.exe"
+                activate_script = venv_path / "Scripts" / "activate.bat"
+            else:
+                venv_python = venv_path / "bin" / "python"
+                activate_script = venv_path / "bin" / "activate"
+            
+            # Valid venv must have Python executable and either pyvenv.cfg or activate script
+            if venv_python.exists() and venv_python.is_file():
+                if has_pyvenv_cfg or activate_script.exists():
                     return str(venv_python)
             
-            # Also check for standard structure without pyvenv.cfg (some tools create venvs differently)
-            if sys.platform == "win32":
-                venv_python = item / "Scripts" / "python.exe"
-                activate_script = item / "Scripts" / "activate.bat"
-            else:
-                venv_python = item / "bin" / "python"
-                activate_script = item / "bin" / "activate"
-            
-            if venv_python.exists() and venv_python.is_file() and activate_script.exists():
-                logger.debug(f"Found virtual environment (by structure): {item.name}")
-                return str(venv_python)
+            return None
+        
+        # First, check common venv directory names (even if in EXCLUDED_DIRS)
+        common_venv_names = ["venv", ".venv", "env", ".env"]
+        for venv_name in common_venv_names:
+            venv_path = self.project_path / venv_name
+            python_exe = _check_venv_path(venv_path)
+            if python_exe:
+                logger.debug(f"Found virtual environment: {venv_name}")
+                return python_exe
+        
+        # Then check all other subdirectories (excluding common names we already checked)
+        try:
+            for item in self.project_path.iterdir():
+                if not item.is_dir():
+                    continue
+                
+                # Skip if it's a common venv name we already checked
+                if item.name in common_venv_names:
+                    continue
+                
+                # Skip other excluded directories
+                if item.name in self.EXCLUDED_DIRS:
+                    continue
+                
+                python_exe = _check_venv_path(item)
+                if python_exe:
+                    logger.debug(f"Found virtual environment: {item.name}")
+                    return python_exe
+        except (PermissionError, OSError) as e:
+            logger.debug(f"Could not iterate project directory: {e}")
         
         return None
 
@@ -190,6 +218,8 @@ class PackageAnalyzer:
         if venv_python:
             python_exe = venv_python
             logger.debug(f"Using virtual environment Python: {python_exe}")
+        else:
+            logger.debug(f"Using system Python: {python_exe}")
 
         try:
             result = subprocess.run(
@@ -197,12 +227,21 @@ class PackageAnalyzer:
                 capture_output=True,
                 text=True,
                 cwd=self.project_path,
+                timeout=30,  # Prevent hanging
             )
             if result.returncode != 0:
-                logger.warning(f"pip list failed: {result.stderr}")
+                logger.warning(f"pip list failed (exit code {result.returncode}): {result.stderr}")
                 return []
 
-            packages = json.loads(result.stdout) if result.stdout else []
+            if not result.stdout or not result.stdout.strip():
+                logger.debug("pip list returned empty output")
+                return []
+
+            packages = json.loads(result.stdout)
+            if not isinstance(packages, list):
+                logger.warning(f"pip list returned unexpected format: {type(packages)}")
+                return []
+
             return [
                 {
                     "name": pkg["name"],
@@ -211,12 +250,20 @@ class PackageAnalyzer:
                     "package_manager": "pip",
                 }
                 for pkg in packages
+                if isinstance(pkg, dict) and "name" in pkg and "version" in pkg and "latest_version" in pkg
             ]
+        except subprocess.TimeoutExpired:
+            logger.error("pip list command timed out")
+            return []
+        except FileNotFoundError:
+            logger.error(f"Python executable not found: {python_exe}")
+            return []
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse pip output as JSON: {e}")
+            logger.debug(f"pip output: {result.stdout[:200] if result.stdout else 'empty'}")
             return []
         except Exception as e:
-            logger.error(f"Error getting pip packages: {e}")
+            logger.error(f"Error getting pip packages: {e}", exc_info=True)
             return []
 
     def _get_js_outdated(self) -> list[dict]:
@@ -581,6 +628,7 @@ Focus on practical migration steps developers need to take."""
 
 
 def analyze_packages(
+    project_path: Optional[str] = None,
     specific_packages: Optional[list] = None,
     tavily_client: Optional["TavilyClient"] = None,
     poll_interval: int = 5,
@@ -589,6 +637,7 @@ def analyze_packages(
     """Analyze packages and return structured recommendations.
 
     Args:
+        project_path: Path to the project directory (default: current directory)
         specific_packages: Optional list of package names to analyze (default: all outdated)
         tavily_client: TavilyClient instance for research (optional)
         poll_interval: Seconds between research status checks
@@ -597,7 +646,11 @@ def analyze_packages(
     Returns:
         List of package analysis results
     """
-    analyzer = PackageAnalyzer()
+    try:
+        analyzer = PackageAnalyzer(project_path)
+    except ValueError as e:
+        logger.error(str(e))
+        return []
     manager = analyzer.detect_package_manager()
 
     if not manager:
@@ -756,14 +809,18 @@ def positive_int(value: str) -> int:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Analyze package upgrades in the current directory using Tavily Research API (advisory only - never auto-upgrades)",
+        description="Analyze package upgrades using Tavily Research API (advisory only - never auto-upgrades)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s
+  %(prog)s --path /my/project
   %(prog)s --packages flask numpy --json
   %(prog)s --output report.json --max-wait 300
         """,
+    )
+    parser.add_argument(
+        "--path", "-p",
+        help="Project path (default: current directory)"
     )
     parser.add_argument(
         "--packages",
@@ -814,6 +871,7 @@ Examples:
         logger.warning("Set TAVILY_API_KEY and install tavily-python for full analysis.")
 
     results = analyze_packages(
+        project_path=args.path,
         specific_packages=args.packages,
         tavily_client=tavily_client,
         poll_interval=args.poll_interval,
