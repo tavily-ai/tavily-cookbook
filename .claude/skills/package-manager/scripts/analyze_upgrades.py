@@ -287,8 +287,10 @@ class PackageAnalyzer:
                 capture_output=True,
                 text=True,
                 cwd=self.project_path,
+                timeout=60,  # Prevent hanging (longer than pip due to network calls)
             )
             # npm outdated returns exit code 1 when packages are outdated
+            # This is expected behavior, not an error
             output = result.stdout if result.stdout else "{}"
 
             if self.package_manager == "yarn":
@@ -299,11 +301,18 @@ class PackageAnalyzer:
             else:
                 return self._parse_npm_outdated(output)
 
+        except subprocess.TimeoutExpired:
+            logger.error(f"{self.package_manager} outdated command timed out after 60 seconds")
+            return []
+        except FileNotFoundError:
+            logger.error(f"{cmd[0]} executable not found")
+            return []
         except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse {self.package_manager} output: {e}")
+            logger.error(f"Failed to parse {self.package_manager} output as JSON: {e}")
+            logger.debug(f"{self.package_manager} output: {result.stdout[:200] if 'result' in locals() and result.stdout else 'empty'}")
             return []
         except Exception as e:
-            logger.error(f"Error getting {self.package_manager} packages: {e}")
+            logger.error(f"Error getting {self.package_manager} packages: {e}", exc_info=True)
             return []
 
     def _parse_npm_outdated(self, output: str) -> list[dict]:
@@ -865,7 +874,12 @@ Examples:
     tavily_client = None
 
     if api_key and TavilyClient:
-        tavily_client = TavilyClient(api_key=api_key)
+        try:
+            tavily_client = TavilyClient(api_key=api_key)
+        except Exception as e:
+            logger.warning(f"Failed to initialize Tavily client: {e}")
+            logger.warning("Risk analysis will be skipped. Continuing without Tavily.")
+            tavily_client = None
     else:
         logger.warning("Tavily not available. Risk analysis will be skipped.")
         logger.warning("Set TAVILY_API_KEY and install tavily-python for full analysis.")
