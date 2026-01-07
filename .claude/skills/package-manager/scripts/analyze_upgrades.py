@@ -101,8 +101,8 @@ class PackageAnalyzer:
 
     EXCLUDED_DIRS = {"node_modules", "venv", ".venv", "__pycache__", ".git", "dist", "build", ".tox", "env"}
 
-    def __init__(self, project_path: Optional[str] = None):
-        self.project_path = Path(project_path) if project_path else Path.cwd()
+    def __init__(self):
+        self.project_path = Path.cwd()
         self.package_manager = None
 
     def detect_package_manager(self) -> Optional[str]:
@@ -140,13 +140,63 @@ class PackageAnalyzer:
             return self._get_js_outdated()
         return []
 
+    def _find_venv_python(self) -> Optional[str]:
+        """Find Python executable in a virtual environment within the project.
+        
+        Looks for directories containing pyvenv.cfg or the standard venv structure.
+        Returns the path to the Python executable if found, None otherwise.
+        """
+        # Check immediate subdirectories for virtual environments
+        for item in self.project_path.iterdir():
+            if not item.is_dir():
+                continue
+            
+            # Skip excluded directories
+            if item.name in self.EXCLUDED_DIRS:
+                continue
+            
+            # Check for pyvenv.cfg (standard marker for Python venv)
+            pyvenv_cfg = item / "pyvenv.cfg"
+            if pyvenv_cfg.exists():
+                # Found a venv, check for Python executable
+                if sys.platform == "win32":
+                    venv_python = item / "Scripts" / "python.exe"
+                else:
+                    venv_python = item / "bin" / "python"
+                
+                if venv_python.exists() and venv_python.is_file():
+                    logger.debug(f"Found virtual environment: {item.name}")
+                    return str(venv_python)
+            
+            # Also check for standard structure without pyvenv.cfg (some tools create venvs differently)
+            if sys.platform == "win32":
+                venv_python = item / "Scripts" / "python.exe"
+                activate_script = item / "Scripts" / "activate.bat"
+            else:
+                venv_python = item / "bin" / "python"
+                activate_script = item / "bin" / "activate"
+            
+            if venv_python.exists() and venv_python.is_file() and activate_script.exists():
+                logger.debug(f"Found virtual environment (by structure): {item.name}")
+                return str(venv_python)
+        
+        return None
+
     def _get_pip_outdated(self) -> list[dict]:
-        """Get outdated pip packages."""
+        """Get outdated pip packages from the project's environment."""
+        # Try to find and use the project's virtual environment
+        python_exe = sys.executable
+        venv_python = self._find_venv_python()
+        if venv_python:
+            python_exe = venv_python
+            logger.debug(f"Using virtual environment Python: {python_exe}")
+
         try:
             result = subprocess.run(
-                [sys.executable, "-m", "pip", "list", "--outdated", "--format=json"],
+                [python_exe, "-m", "pip", "list", "--outdated", "--format=json"],
                 capture_output=True,
                 text=True,
+                cwd=self.project_path,
             )
             if result.returncode != 0:
                 logger.warning(f"pip list failed: {result.stderr}")
@@ -531,7 +581,6 @@ Focus on practical migration steps developers need to take."""
 
 
 def analyze_packages(
-    project_path: str,
     specific_packages: Optional[list] = None,
     tavily_client: Optional["TavilyClient"] = None,
     poll_interval: int = 5,
@@ -540,7 +589,6 @@ def analyze_packages(
     """Analyze packages and return structured recommendations.
 
     Args:
-        project_path: Path to the project directory
         specific_packages: Optional list of package names to analyze (default: all outdated)
         tavily_client: TavilyClient instance for research (optional)
         poll_interval: Seconds between research status checks
@@ -549,7 +597,7 @@ def analyze_packages(
     Returns:
         List of package analysis results
     """
-    analyzer = PackageAnalyzer(project_path)
+    analyzer = PackageAnalyzer()
     manager = analyzer.detect_package_manager()
 
     if not manager:
@@ -708,18 +756,14 @@ def positive_int(value: str) -> int:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Analyze package upgrades using Tavily Research API (advisory only - never auto-upgrades)",
+        description="Analyze package upgrades in the current directory using Tavily Research API (advisory only - never auto-upgrades)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  %(prog)s --path /my/project
+  %(prog)s
   %(prog)s --packages flask numpy --json
   %(prog)s --output report.json --max-wait 300
         """,
-    )
-    parser.add_argument(
-        "--path", "-p",
-        help="Project path (default: current directory)"
     )
     parser.add_argument(
         "--packages",
@@ -770,7 +814,6 @@ Examples:
         logger.warning("Set TAVILY_API_KEY and install tavily-python for full analysis.")
 
     results = analyze_packages(
-        project_path=args.path,
         specific_packages=args.packages,
         tavily_client=tavily_client,
         poll_interval=args.poll_interval,
