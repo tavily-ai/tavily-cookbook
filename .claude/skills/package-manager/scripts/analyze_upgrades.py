@@ -522,10 +522,15 @@ def validate_research_response(data: dict) -> dict:
     if isinstance(data.get("breaking_changes"), list):
         for bc in data["breaking_changes"]:
             if isinstance(bc, dict):
+                # Handle None values: .get() returns None if key exists with None value
+                change = bc.get("change") or ""
+                affected_api = bc.get("affected_api") or ""
+                migration = bc.get("migration") or ""
+                # Ensure all values are strings
                 validated["breaking_changes"].append({
-                    "change": bc.get("change", ""),
-                    "affected_api": bc.get("affected_api", ""),
-                    "migration": bc.get("migration", ""),
+                    "change": str(change) if change is not None else "",
+                    "affected_api": str(affected_api) if affected_api is not None else "",
+                    "migration": str(migration) if migration is not None else "",
                 })
 
     # Validate deprecated_apis array
@@ -766,21 +771,28 @@ def print_results(results: list[dict]):
         print(f"\n{risk_indicator} {r['package']} {r['current_version']} → {r['latest_version']}")
         print(f"   Risk: {r['risk_level']}")
 
-        if r.get("summary"):
+        summary = r.get("summary")
+        if summary and isinstance(summary, str):
             # Wrap summary to ~70 chars
-            summary = r["summary"][:150] + "..." if len(r["summary"]) > 150 else r["summary"]
-            print(f"   Summary: {summary}")
+            summary_str = summary[:150] + "..." if len(summary) > 150 else summary
+            print(f"   Summary: {summary_str}")
 
-        if r.get("risk_explanation"):
-            risk_explanation = r["risk_explanation"][:100] + "..." if len(r["risk_explanation"]) > 100 else r["risk_explanation"]
-            print(f"   {risk_explanation}")
+        risk_explanation = r.get("risk_explanation")
+        if risk_explanation and isinstance(risk_explanation, str):
+            risk_explanation_str = risk_explanation[:100] + "..." if len(risk_explanation) > 100 else risk_explanation
+            print(f"   {risk_explanation_str}")
 
         if r.get("breaking_changes"):
             print(f"\n   Breaking Changes:")
             for bc in r["breaking_changes"][:5]:
-                print(f"     • {bc.get('affected_api', 'Unknown')}: {bc.get('change', '')[:60]}")
-                if bc.get("migration"):
-                    print(f"       → {bc.get('migration')[:60]}")
+                affected_api = bc.get('affected_api') or 'Unknown'
+                change = bc.get('change') or ''
+                change_str = change[:60] if change else ''
+                print(f"     • {affected_api}: {change_str}")
+                migration = bc.get("migration")
+                if migration:
+                    migration_str = migration[:60] if migration else ''
+                    print(f"       → {migration_str}")
 
         if r.get("code_impact"):
             print(f"\n   Code Impact (affected API usage found):")
