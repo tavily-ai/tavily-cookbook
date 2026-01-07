@@ -270,8 +270,8 @@ class PackageAnalyzer:
         if self.package_manager == "pip":
             extensions = [".py"]
             import_patterns = [
-                rf"^\s*import\s+{re.escape(package_name)}",
-                rf"^\s*from\s+{re.escape(package_name)}",
+                rf"^\s*import\s+{re.escape(package_name)}\b",
+                rf"^\s*from\s+{re.escape(package_name)}\b",
             ]
         elif self.package_manager in ("npm", "yarn", "pnpm"):
             extensions = [".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs"]
@@ -285,7 +285,7 @@ class PackageAnalyzer:
 
         for ext in extensions:
             for file_path in self.project_path.rglob(f"*{ext}"):
-                if any(part in self.EXCLUDED_DIRS for part in file_path.parts):
+                if any(part in self.EXCLUDED_DIRS for part in file_path.relative_to(self.project_path).parts):
                     continue
 
                 try:
@@ -341,7 +341,7 @@ class PackageAnalyzer:
 
         for ext in extensions:
             for file_path in self.project_path.rglob(f"*{ext}"):
-                if any(part in self.EXCLUDED_DIRS for part in file_path.parts):
+                if any(part in self.EXCLUDED_DIRS for part in file_path.relative_to(self.project_path).parts):
                     continue
 
                 try:
