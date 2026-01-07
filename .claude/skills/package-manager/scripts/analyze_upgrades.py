@@ -695,6 +695,17 @@ def print_results(results: list[dict]):
     print("=" * 70)
 
 
+def positive_int(value: str) -> int:
+    """Validate that the argument is a positive integer."""
+    try:
+        int_value = int(value)
+        if int_value <= 0:
+            raise argparse.ArgumentTypeError(f"{value} must be a positive integer (got {int_value})")
+        return int_value
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{value} must be a valid integer")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Analyze package upgrades using Tavily Research API (advisory only - never auto-upgrades)",
@@ -726,15 +737,15 @@ Examples:
     )
     parser.add_argument(
         "--poll-interval",
-        type=int,
+        type=positive_int,
         default=5,
-        help="Seconds between research status checks (default: 5)"
+        help="Seconds between research status checks (must be positive, default: 5)"
     )
     parser.add_argument(
         "--max-wait",
-        type=int,
+        type=positive_int,
         default=180,
-        help="Maximum seconds to wait for research per package (default: 180)"
+        help="Maximum seconds to wait for research per package (must be positive, default: 180)"
     )
     parser.add_argument(
         "--verbose", "-v",
