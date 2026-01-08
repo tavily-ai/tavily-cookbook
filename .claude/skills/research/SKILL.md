@@ -134,7 +134,7 @@ See `references/schema.json` for complete schema rules and examples.
 
 | Model | Use Case | Speed |
 |-------|----------|-------|
-| `mini` | single topic, targeted research | Fast |
+| `mini` | Single topic, targeted research | Fast |
 | `pro` | Comprehensive multi-angle analysis, open ended | Slower |
 | `auto` | API chooses based on topic complexity | Varies |
 
