@@ -1,26 +1,26 @@
 ---
-name: technical-trends
-description: "Discover emerging AI/tech trends using a two-step workflow: (1) Search X for what thought leaders are discussing, (2) Deep research on identified trends via Tavily. Use when you need to find what's trending in AI engineering, research emerging patterns, or get insights from industry voices."
+name: technical-trends-discovery
+description: "Discover emerging AI/tech trends using a two-step workflow: (1) Search X for what thought leaders are discussing, (2) Deep research on the indentified tech trend with structured JSON output containing docs URLs, packages with versions, key concepts, and insights. Use when you need to find what's trending in AI engineering, research emerging patterns, or get insights from industry voices."
 ---
 
 # Technical Trends Discovery
 
-Two-step workflow for discovering and researching AI/tech trends:
+X/Twitter is where thought leaders share real-time opinions and insights. The xAI API excels at searching and analyzing X posts to identify what's actually important right now. Once we identify THE trend, Tavily Research extracts structured metadata including **latest package versions**, key concepts, documentation URLs, and insights.
 
-1. **X Search** (xAI API) → Find what thought leaders are discussing
-2. **Deep Research** (Tavily API) → Comprehensive research on identified trends
+Two-step automated pipeline for discovering and deeply researching the **most important** AI/tech trend:
 
-## Why Two Steps?
+1. **X Search** (xAI API) → Find what thought leaders are discussing, identify #1 trend
+2. **Deep Research** (Tavily API) → Comprehensive research on the topic
 
-X/Twitter is where thought leaders share real-time opinions and insights. The xAI API excels at searching and analyzing X posts. Once we identify the trends, Tavily Research does comprehensive web research to provide deep, actionable insights.
+
 
 ## Quick Start
 
 ```bash
-# Run full workflow: X discovery → Tavily research
+# Run full pipeline: X → Research → Structured JSON
 python .claude/skills/technical-trends-discovery/scripts/discover_trends.py
 
-# X discovery only (faster, no Tavily)
+# X discovery only (skip Tavily research)
 python .claude/skills/technical-trends-discovery/scripts/discover_trends.py --x-only
 
 # Custom handles and date range
@@ -35,10 +35,53 @@ Results are saved to `trends-reports/` at the repo root:
 
 ```
 trends-reports/
-└── trends_2025-01-04_143022/
-    ├── x_discovery.md   # What thought leaders are discussing
-    ├── report.md        # Deep research report
-    └── sources.json     # Research citations
+└── trends_2025-01-06_143022/
+    ├── data.json           # Structured trend metadata (main output)
+    ├── x_discovery.md      # X findings with trend ranking
+    └── sources.json        # Research citations
+```
+
+### data.json Structure
+
+```json
+{
+  "trend": {
+    "name": "Model Context Protocol",
+    "summary": "An open standard for sharing context between AI tools...",
+    "why_important": "MCP is emerging as the standard for tool interoperability...",
+    "insights": "Adoption is accelerating as major AI companies integrate MCP...",
+    "docs_url": "https://modelcontextprotocol.io",
+    "github_repo": "https://github.com/modelcontextprotocol",
+    "additional_resources": [
+      "https://modelcontextprotocol.io/quickstart",
+      "https://github.com/modelcontextprotocol/servers"
+    ],
+    "key_packages": [
+      {
+        "name": "mcp",
+        "latest_version": "1.25.0",
+        "package_manager": "pip"
+      }
+    ],
+    "getting_started_link": "https://modelcontextprotocol.io/quickstart",
+    "category": "context_engineering",
+    "key_concepts": [
+      "Resources",
+      "Tools",
+      "Prompts",
+      "Transports",
+      "Server-Client Architecture"
+    ],
+    "related_projects": [
+      "Claude Code",
+      "Cursor",
+      "Continue.dev"
+    ]
+  },
+  "meta": {
+    "research_date": "2025-01-06"
+  }
+}
 ```
 
 ## Default Thought Leaders
@@ -57,30 +100,14 @@ trends-reports/
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `--handles` | 7 AI leaders | X handles to search (max 10) |
-| `--days` | 20 | Days back to search |
-| `--min-favorites` | 100 | Filter by engagement |
-| `--x-only` | false | Skip Tavily research |
-| `--no-save` | false | Print only, don't save |
-| `--output` | auto | Custom output directory |
-
-## Individual Scripts
-
-### x_trends.py - X Search Only
-```bash
-python .claude/skills/technical-trends-discovery/scripts/x_trends.py
-```
-
-### research_trends.py - Tavily Research Only
-```bash
-python .claude/skills/technical-trends-discovery/scripts/research_trends.py
-```
+| `--handles`, `-H` | 7 AI leaders | X handles to search |
+| `--days`, `-d` | 20 | Days back to search |
 
 ## Environment Variables
 
 ```bash
 export XAI_API_KEY="your-xai-key"      # Required for X search
-export TAVILY_API_KEY="your-tavily-key" # Required for deep research
+export TAVILY_API_KEY="your-tavily-key" # Required for research
 ```
 
 ## Python Usage
@@ -88,15 +115,23 @@ export TAVILY_API_KEY="your-tavily-key" # Required for deep research
 ```python
 from discover_trends import discover_trends
 
-# Run full workflow
+# Run full pipeline
 results = discover_trends(
     handles=["karpathy", "simonw", "swyx"],
     days_back=14,
-    min_favorites=200,
 )
 
 # Access results
-print(results["x_trends"]["content"])      # X discovery
-print(results["research"]["content"])       # Deep research
-print(results["research"]["sources"])       # Citations
+print(results["x_trends"]["content"])       # X discovery markdown
+print(results["research"]["content"])       # Structured JSON with trend data
+print(results["output_dir"])                # Where files were saved
 ```
+
+## Categories
+
+Trends are automatically categorized as:
+- `agent_engineering` - Building/deploying LLM agents, frameworks, orchestration
+- `context_engineering` - RAG, memory, context management, MCP
+- `ai_programming` - Code generation, AI-assisted development
+- `other` - Everything else
+

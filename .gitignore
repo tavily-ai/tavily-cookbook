@@ -211,3 +211,4 @@ __marimo__/
 # Trends reports output
 # /trends-reports/
 /trends-reports
+.claude/.mcp.json

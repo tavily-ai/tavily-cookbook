@@ -3,10 +3,12 @@
 Technical Trends Discovery - Two-Step Workflow
 
 Step 1: Search X for what thought leaders are discussing (xAI API)
-Step 2: Deep research on identified trends (Tavily Research API)
+Step 2: Deep research on the #1 trend (Tavily Research API with structured output)
 
 This workflow leverages X as the source for real-time opinions from top voices,
-then uses Tavily to do comprehensive research on the trends discovered.
+then uses Tavily to do comprehensive research on the single most important trend.
+
+Output: Structured JSON with trend metadata, packages, resources, and insights.
 """
 
 import argparse
@@ -27,6 +29,115 @@ except ImportError:
 SCRIPT_DIR = Path(__file__).parent
 REPO_ROOT = SCRIPT_DIR.parents[3]
 TRENDS_REPORTS_DIR = REPO_ROOT / "trends-reports"
+
+# =============================================================================
+# Structured Output Schema for Tavily Research
+# =============================================================================
+
+TREND_RESEARCH_SCHEMA = {
+    "properties": {
+        "trend": {
+            "type": "object",
+            "description": "The single most important trend - focused on actionable info to help developers get started",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Short, concise name of the trend (e.g., 'Model Context Protocol', 'LangGraph')"
+                },
+                "summary": {
+                    "type": "string",
+                    "description": "2-3 sentence summary of what this is and why developers should care"
+                },
+                "why_important": {
+                    "type": "string",
+                    "description": "Why this is the #1 trend right now - what problem it solves, why it's gaining traction"
+                },
+                "docs_url": {
+                    "type": "string",
+                    "description": "Primary documentation URL (single URL). Empty string if none."
+                },
+                "github_repo": {
+                    "type": "string",
+                    "description": "Main GitHub repository URL. Empty string if not open source."
+                },
+                "quickstart": {
+                    "type": "object",
+                    "description": "Everything needed to get a working example in 5 minutes",
+                    "properties": {
+                        "prerequisites": {
+                            "type": "array",
+                            "description": "What you need before starting (e.g., 'Python 3.10+', 'OpenAI API key')",
+                            "items": {"type": "string"}
+                        },
+                        "install_commands": {
+                            "type": "string",
+                            "description": "Copy-paste shell commands to install with specific versions"
+                        },
+                        "hello_world_code": {
+                            "type": "string",
+                            "description": "Minimal working Python code (5-20 lines) from official docs that demonstrates the core concept"
+                        },
+                        "expected_output": {
+                            "type": "string",
+                            "description": "What the code produces when run successfully"
+                        }
+                    },
+                    "required": ["prerequisites", "install_commands", "hello_world_code"]
+                },
+                "use_cases": {
+                    "type": "array",
+                    "description": "3-5 concrete things developers can build",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Short name (e.g., 'RAG Chatbot')"},
+                            "description": {"type": "string", "description": "One sentence on what it does"},
+                            "complexity": {"type": "string", "description": "'beginner', 'intermediate', or 'advanced'"}
+                        },
+                        "required": ["name", "description", "complexity"]
+                    }
+                },
+                "common_pitfalls": {
+                    "type": "array",
+                    "description": "Common mistakes from GitHub issues, Stack Overflow, or forums",
+                    "items": {"type": "string", "description": "A pitfall and how to avoid it"}
+                },
+                "key_packages": {
+                    "type": "array",
+                    "description": "Packages to install with exact versions",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Package name (e.g., 'langgraph')"},
+                            "latest_version": {"type": "string", "description": "Latest version from package registry"},
+                            "package_manager": {"type": "string", "description": "'pip', 'npm', etc."}
+                        },
+                        "required": ["name", "latest_version", "package_manager"]
+                    }
+                },
+                "key_concepts": {
+                    "type": "array",
+                    "description": "5-10 terms/concepts to understand",
+                    "items": {"type": "string"}
+                },
+                "additional_resources": {
+                    "type": "array",
+                    "description": "URLs to tutorials or guides for deeper learning",
+                    "items": {"type": "string"}
+                }
+            },
+            "required": ["name", "summary", "why_important", "quickstart", "use_cases", "key_packages"]
+        },
+        "meta": {
+            "type": "object",
+            "properties": {
+                "research_date": {"type": "string", "description": "YYYY-MM-DD"}
+            },
+            "required": ["research_date"]
+        }
+    },
+    "required": ["trend", "meta"]
+}
 
 
 def get_output_dir() -> Path:
@@ -52,16 +163,20 @@ DEFAULT_HANDLES = [
     "alexalbert__",   # Alex Albert (Anthropic)
 ]
 
-X_DISCOVERY_PROMPT = """Analyze the recent posts from these AI thought leaders and identify:
+X_DISCOVERY_PROMPT = """Analyze the recent posts from these AI thought leaders and identify the **SINGLE MOST IMPORTANT** emerging trend.
 
-1. **Top 3 Emerging Trends** - What topics are multiple people discussing? Be specific about the trend name.
-2. **Key Insights** - Novel ideas, patterns, or frameworks mentioned
-3. **Who Said What** - Cite which thought leader mentioned each topic
+Your task:
+1. **Identify THE #1 Trend** - What is the single most significant topic that multiple thought leaders are discussing? Be specific about the trend name.
+2. **Specific Tools/Projects Mentioned** - What specific tools, frameworks, or projects are thought leaders actually using or discussing in relation to this trend?
+3. **Why It's #1** - Explain why this trend stands out above others (momentum, impact, novelty, adoption)
+4. **Key Voices** - Which thought leaders mentioned it and what did they say about it?
+5. **Supporting Context** - What other topics are related to this main trend?
 
-Format the trends as a clear numbered list that can be used for follow-up research."""
+Focus on DEPTH over breadth. We want to deeply understand ONE trend, not superficially cover many.
+The trend should be something developers can act on - a tool, framework, methodology, or paradigm shift."""
 
 
-def search_x_trends(handles: list[str], days_back: int, min_favorites: int) -> dict:
+def search_x_trends(handles: list[str], days_back: int) -> dict:
     """Step 1: Search X for trends from thought leaders."""
     try:
         from xai_sdk import Client
@@ -96,7 +211,7 @@ def search_x_trends(handles: list[str], days_back: int, min_favorites: int) -> d
             sources=[
                 x_source(
                     included_x_handles=handles,
-                    post_favorite_count=min_favorites,
+                    post_favorite_count=100,  # Filter for posts with decent engagement
                 )
             ],
         ),
@@ -117,24 +232,61 @@ def search_x_trends(handles: list[str], days_back: int, min_favorites: int) -> d
 # =============================================================================
 
 def build_research_prompt(x_trends: str) -> str:
-    """Build a Tavily research prompt based on trends discovered on X."""
-    return f"""Based on recent discussions from AI thought leaders on X, the following trends have been identified:
+    """Build a research prompt focused on actionable developer content."""
+    return f"""Based on recent discussions from AI thought leaders on X, this trend has been identified:
 
 {x_trends}
 
-For each of these trends, provide comprehensive research including:
+Your task: Research this trend with a focus on ACTIONABLE INFORMATION that helps a developer get started in 5 minutes.
 
-1. **Technical Deep Dive** - What exactly is this trend? How does it work?
-2. **Major Developments** - Recent announcements, releases, or breakthroughs
-3. **Practical Implementations** - Real-world applications and use cases
-4. **Key Libraries & Tools** - Specific tools, frameworks, or projects to explore
-5. **Getting Started** - How can developers start experimenting with this?
+## Required Research
 
-Focus on actionable insights and specific resources."""
+### 1. Quickstart (MOST IMPORTANT)
+- **Prerequisites**: What does a developer need? (Python version, API keys, etc.)
+- **Install commands**: Exact pip/npm install commands WITH specific version numbers
+- **Hello World code**: Find the simplest working example from official docs (5-20 lines of Python). Must be REAL, RUNNABLE code - not pseudocode.
+- **Expected output**: What does the code produce when successful?
+
+### 2. Use Cases
+Find 3-5 concrete things developers are building with this. Look at:
+- GitHub repos using this technology
+- Blog posts showing implementations
+- Official examples/cookbooks
+For each: name, one-sentence description, complexity (beginner/intermediate/advanced)
+
+### 3. Common Pitfalls
+Search GitHub issues, Stack Overflow, Discord/Slack communities for common problems:
+- Setup issues people hit
+- Configuration mistakes
+- Version compatibility problems
+Include how to avoid or fix each one.
+
+### 4. Packages
+Find exact package names and their LATEST versions from PyPI/npm. Check the actual package registry pages.
+
+### 5. Key Concepts
+What 5-10 terms/concepts must a developer understand?
+
+## Research Sources Priority
+1. Official documentation quickstart/getting-started pages
+2. Package registry pages (PyPI, npm) for exact versions
+3. GitHub issues for common pitfalls
+4. Developer blog posts for real use cases
+
+Focus on PRACTICAL, COPY-PASTE-ABLE information. A developer should be able to read the output and have working code in 5 minutes."""
 
 
 def research_trends(prompt: str, poll_interval: int = 5) -> dict:
-    """Step 2: Deep research on trends using Tavily."""
+    """
+    Step 2: Deep research on trends using Tavily with structured output.
+
+    Args:
+        prompt: Research prompt based on X discoveries
+        poll_interval: Seconds between status polls
+
+    Returns:
+        Dict with status, content (structured JSON), and sources
+    """
     try:
         from tavily import TavilyClient
     except ImportError:
@@ -147,10 +299,15 @@ def research_trends(prompt: str, poll_interval: int = 5) -> dict:
     print("=" * 60)
     print("STEP 2: TAVILY DEEP RESEARCH")
     print("=" * 60)
-    print("Initiating deep research on identified trends...\n")
+    print("Initiating structured research on identified trend...\n")
 
     client = TavilyClient(api_key=api_key)
-    result = client.research(input=prompt, model="pro")
+
+    result = client.research(
+        input=prompt,
+        model="pro",
+        output_schema=TREND_RESEARCH_SCHEMA
+    )
     request_id = result["request_id"]
     print(f"Research initiated (request_id: {request_id})")
 
@@ -181,29 +338,33 @@ def research_trends(prompt: str, poll_interval: int = 5) -> dict:
 def discover_trends(
     handles: list[str] = None,
     days_back: int = 20,
-    min_favorites: int = 100,
-    skip_research: bool = False,
 ) -> dict:
     """
-    Two-step trend discovery:
+    Two-step trend discovery pipeline:
     1. Search X for what thought leaders are discussing
-    2. Deep research on the identified trends via Tavily
+    2. Deep research on THE most important trend via Tavily (structured JSON output)
+
+    Args:
+        handles: X handles to search
+        days_back: Days back to search
+
+    Returns:
+        Dict with x_trends, research (structured JSON), and output_dir
     """
     handles = handles or DEFAULT_HANDLES
+    output_dir = get_output_dir()
 
     # Step 1: X Search
-    x_result = search_x_trends(handles, days_back, min_favorites)
+    x_result = search_x_trends(handles, days_back)
 
-    if skip_research:
-        return {"x_trends": x_result, "research": None}
-
-    # Step 2: Build research prompt and run Tavily
+    # Step 2: Tavily Deep Research (structured JSON output)
     research_prompt = build_research_prompt(x_result["content"])
     research_result = research_trends(research_prompt)
 
     return {
         "x_trends": x_result,
         "research": research_result,
+        "output_dir": str(output_dir),
     }
 
 
@@ -220,13 +381,31 @@ def save_results(output_dir: Path, results: dict):
                 f.write(f"- {url}\n")
     print(f"X discovery saved to: {x_path}")
 
-    # Save deep research if available
+    # Save research results as structured JSON
     if results["research"] and results["research"].get("status") == "completed":
-        report_path = output_dir / "report.md"
-        with open(report_path, "w") as f:
-            f.write(results["research"]["content"])
-        print(f"Research report saved to: {report_path}")
+        content = results["research"]["content"]
 
+        # Save structured data as JSON
+        data_path = output_dir / "data.json"
+        if isinstance(content, str):
+            try:
+                data = json.loads(content)
+            except json.JSONDecodeError:
+                data = {"raw": content}
+        else:
+            data = content
+
+        # Add metadata
+        data["_meta"] = {
+            "generated_at": datetime.now().isoformat(),
+            "sources_count": len(results["research"].get("sources", [])),
+        }
+
+        with open(data_path, "w") as f:
+            json.dump(data, f, indent=2)
+        print(f"Structured data saved to: {data_path}")
+
+        # Save sources
         sources_path = output_dir / "sources.json"
         simplified_sources = [
             {"url": s.get("url", ""), "title": s.get("title", "Untitled")}
@@ -239,7 +418,7 @@ def save_results(output_dir: Path, results: dict):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Discover AI trends: X search → Tavily deep research"
+        description="Discover AI trends: X search → Tavily deep research → Structured JSON"
     )
     parser.add_argument(
         "--handles", "-H",
@@ -252,55 +431,32 @@ def main():
         default=20,
         help="Days back to search (default: 20)"
     )
-    parser.add_argument(
-        "--min-favorites", "-f",
-        type=int,
-        default=100,
-        help="Minimum favorites filter (default: 100)"
-    )
-    parser.add_argument(
-        "--x-only",
-        action="store_true",
-        help="Only run X search, skip Tavily research"
-    )
-    parser.add_argument(
-        "--no-save",
-        action="store_true",
-        help="Don't save to files, only print to stdout"
-    )
-    parser.add_argument(
-        "--output", "-o",
-        help="Output directory (default: trends-reports/trends_<timestamp>/)"
-    )
 
     args = parser.parse_args()
 
-    # Run discovery
+    # Run discovery pipeline
     results = discover_trends(
         handles=args.handles,
         days_back=args.days,
-        min_favorites=args.min_favorites,
-        skip_research=args.x_only,
     )
 
     # Save results
-    if not args.no_save:
-        output_dir = Path(args.output) if args.output else get_output_dir()
-        if args.output:
-            output_dir.mkdir(parents=True, exist_ok=True)
-        save_results(output_dir, results)
+    if results.get("output_dir"):
+        save_results(Path(results["output_dir"]), results)
 
     # Print summary
     print("\n" + "=" * 60)
-    print("X TRENDS DISCOVERED")
+    print("PIPELINE COMPLETE")
     print("=" * 60)
-    print(results["x_trends"]["content"])
+    print(f"Output directory: {results['output_dir']}")
 
     if results["research"] and results["research"].get("status") == "completed":
-        print("\n" + "=" * 60)
-        print("DEEP RESEARCH REPORT")
-        print("=" * 60)
-        print(results["research"]["content"])
+        print("\n--- STRUCTURED OUTPUT ---")
+        content = results["research"]["content"]
+        if isinstance(content, dict):
+            print(json.dumps(content, indent=2))
+        else:
+            print(content)
 
 
 if __name__ == "__main__":
