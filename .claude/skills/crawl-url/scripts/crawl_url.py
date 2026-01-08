@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Documentation Crawler Script
+URL Crawler Script
 
-Crawls a documentation site using Tavily Crawl API and saves each page
+Crawls a website using Tavily Crawl API and saves each page
 as a separate markdown file in a flat directory structure.
 """
 
@@ -29,7 +29,7 @@ except ImportError:
 # Output directory at repo root
 SCRIPT_DIR = Path(__file__).parent
 REPO_ROOT = SCRIPT_DIR.parents[3]
-CONTEXT_DIR = REPO_ROOT / "context"
+CRAWLED_CONTEXT_DIR = REPO_ROOT / "crawled_context"
 
 
 def url_to_filename(url: str) -> str:
@@ -150,21 +150,21 @@ crawled_at: {datetime.now().isoformat()}
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Crawl documentation sites and save as markdown files",
+        description="Crawl websites and save as markdown files",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Basic crawl
-  python crawl_docs.py https://docs.stripe.com/api
+  python crawl_url.py https://docs.stripe.com/api
 
   # With instruction
-  python crawl_docs.py https://react.dev --instruction "Focus on API reference pages"
+  python crawl_url.py https://react.dev --instruction "Focus on API reference pages"
 
   # Custom output directory
-  python crawl_docs.py https://docs.anthropic.com -o ./anthropic-docs
+  python crawl_url.py https://docs.anthropic.com -o ./anthropic-docs
 
   # Control crawl depth and breadth
-  python crawl_docs.py https://nextjs.org/docs --depth 3 --limit 100
+  python crawl_url.py https://nextjs.org/docs --depth 3 --limit 100
         """
     )
 
@@ -181,7 +181,7 @@ Examples:
     parser.add_argument(
         "--output", "-o",
         type=Path,
-        help="Output directory (default: <repo_root>/context/<domain>)"
+        help="Output directory (default: <repo_root>/crawled_context/<domain>)"
     )
 
     parser.add_argument(
@@ -211,10 +211,10 @@ Examples:
     if args.output:
         output_dir = args.output
     else:
-        # Default: <repo_root>/context/<domain>
+        # Default: <repo_root>/crawled_context/<domain>
         parsed = urlparse(args.url)
         domain = parsed.netloc.replace(".", "_")
-        output_dir = CONTEXT_DIR / domain
+        output_dir = CRAWLED_CONTEXT_DIR / domain
 
     # Execute crawl
     try:
