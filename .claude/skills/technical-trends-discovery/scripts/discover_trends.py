@@ -130,6 +130,7 @@ TREND_RESEARCH_SCHEMA = {
         },
         "meta": {
             "type": "object",
+            "description": "Metadata about the research",
             "properties": {
                 "research_date": {"type": "string", "description": "YYYY-MM-DD"}
             },
@@ -303,30 +304,42 @@ def research_trends(prompt: str, poll_interval: int = 5) -> dict:
 
     client = TavilyClient(api_key=api_key)
 
-    result = client.research(
-        input=prompt,
-        model="pro",
-        output_schema=TREND_RESEARCH_SCHEMA
-    )
-    request_id = result["request_id"]
-    print(f"Research initiated (request_id: {request_id})")
+    try:
+        result = client.research(
+            input=prompt,
+            model="pro",
+            output_schema=TREND_RESEARCH_SCHEMA
+        )
+        request_id = result["request_id"]
+        print(f"Research initiated (request_id: {request_id})")
+    except Exception as e:
+        print(f"ERROR: Failed to initiate research: {e}")
+        return {"status": "failed", "error": str(e)}
 
     elapsed = 0
     while True:
-        response = client.get_research(request_id)
-        status = response.get("status", "unknown")
+        try:
+            response = client.get_research(request_id)
+            status = response.get("status", "unknown")
 
-        if status == "completed":
-            print(f"Research completed in {elapsed}s\n")
-            return {
-                "status": "completed",
-                "content": response.get("content"),
-                "sources": response.get("sources", []),
-            }
-        elif status == "failed":
-            return {"status": "failed", "error": response.get("error")}
-        else:
-            print(f"Status: {status}... waiting {poll_interval}s")
+            if status == "completed":
+                print(f"Research completed in {elapsed}s\n")
+                return {
+                    "status": "completed",
+                    "content": response.get("content"),
+                    "sources": response.get("sources", []),
+                }
+            elif status == "failed":
+                error_msg = response.get("error", "Unknown error")
+                print(f"Research failed: {error_msg}")
+                return {"status": "failed", "error": error_msg}
+            else:
+                print(f"Status: {status}... waiting {poll_interval}s (elapsed: {elapsed}s)")
+                time.sleep(poll_interval)
+                elapsed += poll_interval
+        except Exception as e:
+            print(f"ERROR polling research status: {e}")
+            print("Retrying...")
             time.sleep(poll_interval)
             elapsed += poll_interval
 
