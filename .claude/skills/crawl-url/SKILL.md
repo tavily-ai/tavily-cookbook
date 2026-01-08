@@ -1,6 +1,6 @@
 ---
 name: crawl-url
-description: Crawl and extract content from any website using Tavily Crawl API. Use when the user asks to crawl, extract, or download content from a website. Saves each page as a markdown file in a flat directory structure with filenames based on URLs. Supports optional natural language instructions to guide the crawler.
+description: "Crawl any website and save pages as local markdown files. Use when you need to download documentation, knowledge bases, or web content for offline access or analysis. No code required - just provide a URL."
 ---
 
 # URL Crawler

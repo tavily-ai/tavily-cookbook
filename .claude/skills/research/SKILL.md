@@ -1,6 +1,6 @@
 ---
 name: research
-description: General-purpose research skill. Conducts comprehensive research on any topic with optional structured JSON output. Supports streaming and polling modes. Use when you need AI-synthesized research grounded in web data with citations on any subject.
+description: "Get AI-synthesized research on any topic with citations, directly in your terminal. Supports structured JSON output for pipelines. Use when you need comprehensive research grounded in web data without writing code."
 ---
 
 # Research Skill

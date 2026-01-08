@@ -1,6 +1,6 @@
 ---
 name: technical-trends-discovery
-description: "Discover emerging AI/tech trends using a two-step workflow: (1) Search X for what thought leaders are discussing, (2) Deep research on the indentified tech trend with structured JSON output containing docs URLs, packages with versions, key concepts, and insights. Use when you need to find what's trending in AI engineering, research emerging patterns, or get insights from industry voices."
+description: "Discover what's trending in AI/tech by scanning thought leaders on X, then deep-researching the #1 trend with structured output (docs URLs, package versions, key concepts). Use when you want to stay current on AI engineering trends without manual research."
 ---
 
 # Technical Trends Discovery

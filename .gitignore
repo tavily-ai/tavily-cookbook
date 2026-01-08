@@ -209,6 +209,8 @@ marimo/_lsp/
 __marimo__/
 
 # Trends reports output
-# /trends-reports/
-/trends-reports
+/trends-reports/
 .claude/.mcp.json
+
+# Crawled context output
+crawled_context/
