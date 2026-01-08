@@ -6,7 +6,7 @@ __pycache__/
 # C extensions
 *.so
 
-/trends-reports/
+# /trends-reports/
 # Distribution / packaging
 .Python
 build/
@@ -210,3 +210,7 @@ __marimo__/
 
 # Trends reports output
 /trends-reports/
+.claude/.mcp.json
+
+# Crawled context output
+crawled_context/

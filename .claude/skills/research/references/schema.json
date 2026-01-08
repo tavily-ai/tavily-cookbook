@@ -1,0 +1,322 @@
+{
+  "$comment": "This file documents the RULES for creating JSON schemas compatible with Tavily Research API's output_schema parameter. It is NOT an example schema itself.",
+
+  "title": "Tavily Research Output Schema Requirements",
+  "description": "Rules and requirements for creating valid output_schema objects for Tavily Research API",
+
+  "rules": {
+    "property_requirements": {
+      "description": "Every property in your schema MUST include both 'type' and 'description' fields",
+      "rationale": "The description field guides the AI in understanding what content to extract and how to format it",
+      "valid_example": {
+        "company_name": {
+          "type": "string",
+          "description": "Official company name as registered"
+        }
+      },
+      "invalid_example": {
+        "company_name": {
+          "type": "string"
+        }
+      },
+      "error_if_missing": "Schema validation will fail or produce poor/inconsistent results"
+    },
+
+    "supported_types": {
+      "description": "Supported JSON Schema types for properties",
+      "types": [
+        "string",
+        "integer",
+        "number",
+        "object",
+        "array",
+        "boolean"
+      ],
+      "notes": {
+        "string": "Use for text content of any length",
+        "integer": "Use for whole numbers only",
+        "number": "Use for decimals and floating point values",
+        "object": "Nested objects must also follow all schema rules (type + description for each property)",
+        "array": "Use 'items' to define the schema for array elements",
+        "boolean": "Use for true/false flags"
+      },
+      "unsupported": [
+        "date",
+        "datetime",
+        "time",
+        "null",
+        "any"
+      ],
+      "workaround_for_dates": "Use 'string' type with description explaining expected format (e.g., 'ISO-8601 date string')"
+    },
+
+    "required_fields": {
+      "description": "Use 'required' arrays to enforce mandatory fields",
+      "scope": "Can be applied at root level and within nested objects",
+      "example": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Article or report title"
+          },
+          "optional_notes": {
+            "type": "string",
+            "description": "Additional notes if available"
+          }
+        },
+        "required": ["title"]
+      },
+      "best_practice": "Mark fields as required only when they are essential - the API handles missing data gracefully"
+    },
+
+    "root_structure": {
+      "description": "Schema must have 'properties' key at root level",
+      "valid_structure": {
+        "properties": {
+          "field_name": {
+            "type": "<type>",
+            "description": "<description>"
+          }
+        }
+      },
+      "optional_root_keys": [
+        "required",
+        "description",
+        "title"
+      ]
+    },
+
+    "nesting": {
+      "description": "Schemas can be nested to any depth using object types",
+      "best_practice": "Keep nesting shallow (2-3 levels) for better results",
+      "reason": "Deeply nested schemas may produce inconsistent or incomplete results",
+      "example": {
+        "properties": {
+          "analysis": {
+            "type": "object",
+            "description": "Main analysis section containing summary and metrics",
+            "properties": {
+              "summary": {
+                "type": "string",
+                "description": "Executive summary of findings"
+              },
+              "metrics": {
+                "type": "object",
+                "description": "Key quantitative metrics",
+                "properties": {
+                  "value": {
+                    "type": "number",
+                    "description": "Primary metric value"
+                  },
+                  "unit": {
+                    "type": "string",
+                    "description": "Unit of measurement"
+                  }
+                },
+                "required": ["value"]
+              }
+            },
+            "required": ["summary"]
+          }
+        }
+      }
+    },
+
+    "arrays": {
+      "description": "Array properties should define their item schema using 'items' key",
+      "simple_array_example": {
+        "key_points": {
+          "type": "array",
+          "description": "List of key findings from research",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "object_array_example": {
+        "findings": {
+          "type": "array",
+          "description": "Detailed findings with confidence levels",
+          "items": {
+            "type": "object",
+            "properties": {
+              "finding": {
+                "type": "string",
+                "description": "The finding statement"
+              },
+              "confidence": {
+                "type": "string",
+                "description": "Confidence level: high, medium, or low"
+              },
+              "source_count": {
+                "type": "integer",
+                "description": "Number of sources supporting this finding"
+              }
+            },
+            "required": ["finding"]
+          }
+        }
+      }
+    }
+  },
+
+  "minimal_valid_schema": {
+    "description": "The simplest valid schema structure",
+    "schema": {
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Brief summary of research findings"
+        }
+      },
+      "required": ["summary"]
+    }
+  },
+
+  "best_practices": [
+    {
+      "practice": "Write clear, specific descriptions",
+      "reason": "Descriptions guide the AI's content extraction - vague descriptions produce vague results"
+    },
+    {
+      "practice": "Use required arrays for essential fields",
+      "reason": "Ensures critical data is always returned"
+    },
+    {
+      "practice": "Keep schemas focused",
+      "reason": "Too many fields dilutes quality - 5-10 properties is ideal"
+    },
+    {
+      "practice": "Test schemas with simple topics first",
+      "reason": "Validates schema structure before production use"
+    },
+    {
+      "practice": "Prefer specific types",
+      "reason": "Use integer vs number when format is known for better parsing"
+    },
+    {
+      "practice": "Include format hints in descriptions",
+      "reason": "E.g., 'Date in YYYY-MM-DD format' helps consistency"
+    }
+  ],
+
+  "common_mistakes": [
+    {
+      "mistake": "Missing description field",
+      "symptom": "Schema validation fails or produces poor results",
+      "fix": "Always include description for every property"
+    },
+    {
+      "mistake": "Using unsupported types like 'date' or 'datetime'",
+      "symptom": "Schema validation failure",
+      "fix": "Use 'string' type with description explaining expected format"
+    },
+    {
+      "mistake": "Deeply nested schemas (5+ levels)",
+      "symptom": "Inconsistent or incomplete results",
+      "fix": "Flatten schema structure, use arrays for repeated elements"
+    },
+    {
+      "mistake": "No properties at root level",
+      "symptom": "Schema validation error",
+      "fix": "Ensure schema has 'properties' key at root"
+    },
+    {
+      "mistake": "Overly complex schemas with 20+ fields",
+      "symptom": "Lower quality per field, some fields may be empty",
+      "fix": "Split into multiple focused schemas or reduce scope"
+    }
+  ],
+
+  "example_schemas": {
+    "market_analysis": {
+      "description": "Example schema for market research",
+      "schema": {
+        "properties": {
+          "market_overview": {
+            "type": "string",
+            "description": "2-3 sentence overview of the market"
+          },
+          "market_size": {
+            "type": "string",
+            "description": "Total addressable market size with currency"
+          },
+          "growth_rate": {
+            "type": "number",
+            "description": "Annual growth rate as percentage"
+          },
+          "key_players": {
+            "type": "array",
+            "description": "Major companies in this market",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Company name"
+                },
+                "market_share": {
+                  "type": "string",
+                  "description": "Approximate market share"
+                }
+              },
+              "required": ["name"]
+            }
+          },
+          "trends": {
+            "type": "array",
+            "description": "Current market trends",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["market_overview", "key_players"]
+      }
+    },
+    "technical_comparison": {
+      "description": "Example schema for comparing technologies",
+      "schema": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "description": "Executive summary of the comparison"
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "Which option to choose and why"
+          },
+          "options": {
+            "type": "array",
+            "description": "Technologies being compared",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Technology or framework name"
+                },
+                "pros": {
+                  "type": "array",
+                  "description": "Advantages",
+                  "items": {"type": "string"}
+                },
+                "cons": {
+                  "type": "array",
+                  "description": "Disadvantages",
+                  "items": {"type": "string"}
+                },
+                "best_for": {
+                  "type": "string",
+                  "description": "Ideal use cases"
+                }
+              },
+              "required": ["name", "pros", "cons"]
+            }
+          }
+        },
+        "required": ["summary", "options"]
+      }
+    }
+  }
+}
