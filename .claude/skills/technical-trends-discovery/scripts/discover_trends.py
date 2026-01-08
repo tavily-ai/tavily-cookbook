@@ -382,51 +382,54 @@ def discover_trends(
 
 
 def save_results(output_dir: Path, results: dict):
-    """Save results to output directory."""
-    # Save X trends discovery
-    x_path = output_dir / "x_discovery.md"
-    with open(x_path, "w") as f:
-        f.write("# X Trends Discovery\n\n")
-        f.write(results["x_trends"]["content"])
-        if results["x_trends"]["citations"]:
-            f.write("\n\n## Sources\n\n")
-            for url in results["x_trends"]["citations"]:
-                f.write(f"- {url}\n")
-    print(f"X discovery saved to: {x_path}")
+    """Save all results to a single consolidated JSON file."""
+    report_path = output_dir / "report.json"
 
-    # Save research results as structured JSON
+    # Build consolidated report
+    report = {
+        "meta": {
+            "generated_at": datetime.now().isoformat(),
+            "pipeline": "x_discovery → tavily_research",
+        },
+        "x_discovery": {
+            "content": results["x_trends"]["content"],
+            "citations": results["x_trends"].get("citations", []),
+        },
+    }
+
+    # Add research results if completed
     if results["research"] and results["research"].get("status") == "completed":
         content = results["research"]["content"]
 
-        # Save structured data as JSON
-        data_path = output_dir / "data.json"
+        # Parse structured data
         if isinstance(content, str):
             try:
-                data = json.loads(content)
+                research_data = json.loads(content)
             except json.JSONDecodeError:
-                data = {"raw": content}
+                research_data = {"raw": content}
         else:
-            data = content
+            research_data = content
 
-        # Add metadata
-        data["_meta"] = {
-            "generated_at": datetime.now().isoformat(),
-            "sources_count": len(results["research"].get("sources", [])),
-        }
-
-        with open(data_path, "w") as f:
-            json.dump(data, f, indent=2)
-        print(f"Structured data saved to: {data_path}")
-
-        # Save sources
-        sources_path = output_dir / "sources.json"
-        simplified_sources = [
+        # Simplify sources
+        sources = [
             {"url": s.get("url", ""), "title": s.get("title", "Untitled")}
             for s in results["research"].get("sources", [])
         ]
-        with open(sources_path, "w") as f:
-            json.dump(simplified_sources, f, indent=2)
-        print(f"Sources saved to: {sources_path}")
+
+        report["research"] = research_data
+        report["sources"] = sources
+        report["meta"]["sources_count"] = len(sources)
+    else:
+        report["research"] = None
+        report["sources"] = []
+        report["meta"]["status"] = results["research"].get("status", "unknown")
+        if results["research"].get("error"):
+            report["meta"]["error"] = results["research"]["error"]
+
+    # Save consolidated report
+    with open(report_path, "w") as f:
+        json.dump(report, f, indent=2)
+    print(f"Report saved to: {report_path}")
 
 
 def main():

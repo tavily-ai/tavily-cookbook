@@ -31,56 +31,53 @@ python .claude/skills/technical-trends-discovery/scripts/discover_trends.py \
 
 ## Output Format
 
-Results are saved to `trends-reports/` at the repo root:
+Results are saved to `trends-reports/` at the repo root as a single consolidated JSON file:
 
 ```
 trends-reports/
 └── trends_2025-01-06_143022/
-    ├── data.json           # Structured trend metadata (main output)
-    ├── x_discovery.md      # X findings with trend ranking
-    └── sources.json        # Research citations
+    └── report.json         # All results in one file
 ```
 
-### data.json Structure
+### report.json Structure
 
 ```json
 {
-  "trend": {
-    "name": "Model Context Protocol",
-    "summary": "An open standard for sharing context between AI tools...",
-    "why_important": "MCP is emerging as the standard for tool interoperability...",
-    "insights": "Adoption is accelerating as major AI companies integrate MCP...",
-    "docs_url": "https://modelcontextprotocol.io",
-    "github_repo": "https://github.com/modelcontextprotocol",
-    "additional_resources": [
-      "https://modelcontextprotocol.io/quickstart",
-      "https://github.com/modelcontextprotocol/servers"
-    ],
-    "key_packages": [
-      {
-        "name": "mcp",
-        "latest_version": "1.25.0",
-        "package_manager": "pip"
-      }
-    ],
-    "getting_started_link": "https://modelcontextprotocol.io/quickstart",
-    "category": "context_engineering",
-    "key_concepts": [
-      "Resources",
-      "Tools",
-      "Prompts",
-      "Transports",
-      "Server-Client Architecture"
-    ],
-    "related_projects": [
-      "Claude Code",
-      "Cursor",
-      "Continue.dev"
-    ]
-  },
   "meta": {
-    "research_date": "2025-01-06"
-  }
+    "generated_at": "2025-01-06T14:30:22.123456",
+    "pipeline": "x_discovery → tavily_research",
+    "sources_count": 15
+  },
+  "x_discovery": {
+    "content": "# X Trends Analysis\n\nThe #1 trend identified...",
+    "citations": ["https://x.com/..."]
+  },
+  "research": {
+    "trend": {
+      "name": "Model Context Protocol",
+      "summary": "An open standard for sharing context between AI tools...",
+      "why_important": "MCP is emerging as the standard...",
+      "docs_url": "https://modelcontextprotocol.io",
+      "github_repo": "https://github.com/modelcontextprotocol",
+      "quickstart": {
+        "prerequisites": ["Python 3.10+"],
+        "install_commands": "pip install mcp==1.25.0",
+        "hello_world_code": "from mcp import Client...",
+        "expected_output": "Connected to MCP server"
+      },
+      "use_cases": [...],
+      "common_pitfalls": [...],
+      "key_packages": [
+        {"name": "mcp", "latest_version": "1.25.0", "package_manager": "pip"}
+      ],
+      "key_concepts": ["Resources", "Tools", "Prompts"],
+      "additional_resources": [...]
+    },
+    "meta": {"research_date": "2025-01-06"}
+  },
+  "sources": [
+    {"url": "https://...", "title": "MCP Documentation"}
+  ]
 }
 ```
 
