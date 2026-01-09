@@ -7,7 +7,7 @@ Learn to build AI applications with [Tavily](https://tavily.com) — a search AP
 | Directory | Purpose |
 |-----------|---------|
 | [**Cookbooks**](./cookbooks) | Click-through Jupyter notebooks for getting started with the Tavily API |
-| [**Solution Patterns**](./solution-patterns) | Technical enablement guides for production agent architectures |
+| [**Research Toolkit**](./research-toolkit) | Production-ready tools, agents, and utilities to build research agents faster |
 | [**Agent skills**](./.claude/skills) | Folders of instructions, scripts, and resources that agents can discover and use to do things more accurately and efficiently |
 
 ## Agent Skills
