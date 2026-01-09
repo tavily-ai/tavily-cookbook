@@ -13,9 +13,9 @@ from typing import Literal, Optional
 
 from dotenv import load_dotenv
 
-# Add solution-patterns directory to path for imports
+# Add research-toolkit directory to path for imports
 parent_dir = os.path.join(os.path.dirname(__file__), "..")
-solution_patterns_dir = os.path.join(parent_dir, "solution-patterns")
+solution_patterns_dir = os.path.join(parent_dir, "research-toolkit")
 sys.path.insert(0, solution_patterns_dir)
 
 # Load environment variables from .env file

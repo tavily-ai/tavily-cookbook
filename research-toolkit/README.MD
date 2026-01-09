@@ -1,4 +1,4 @@
-# Tavily Solution Patterns
+# Tavily Research Toolkit
 
 Build production-grade research agents with patterns we've battle-tested across customer deployments and our deep research endpoint.
 
@@ -13,7 +13,7 @@ Build production-grade research agents with patterns we've battle-tested across 
 ## Project Structure
 
 ```
-solution-patterns/
+research-toolkit/
 ├── tools/           # Research primitives
 ├── agents/          # Pre-built research agents
 ├── utilities/       # Context engineering utilities

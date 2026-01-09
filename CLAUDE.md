@@ -18,14 +18,14 @@ This repository centers on three emerging AI engineering trends identified throu
 | **Context Engineering** | Techniques for selecting, maintaining, pruning, and presenting context to foundation models—treating memory as a living system (PCE, RAG 2.0, MCP) |
 | **AI-Assisted Programming** | LLM-powered code generation workflows, "vibe coding" patterns, and tooling for validating/maintaining AI-generated code |
 
-Cookbooks, solution patterns, and automations in this repo demonstrate practical implementations across these areas using Tavily's real-time web data capabilities.
+Cookbooks, Research-Toolkit, and automations in this repo demonstrate practical implementations across these areas using Tavily's real-time web data capabilities.
 
 ## Repository Structure
 
 | Directory | Purpose |
 |-----------|---------|
 | `cookbooks/` | Jupyter notebooks organized by API: `getting-started/`, `search/`, `research/`, `crawl/`, `integrations/`, `mcp/` |
-| `solution-patterns/` | Production agent architecture guides and enablement material |
+| `research-toolkit/` | Production agent architecture guides and enablement material |
 | `use-cases/` | Real automations using Claude Code, Tavily, and others |
 | `research/` | AI trends research outputs (dated directories with `report.md` + `sources.json`) |
 | `.claude/skills/` | Claude Code skills including `tavily-api` reference and `technical-trends-discovery` |

@@ -258,7 +258,7 @@ REPORT
 
 ## Architecture
 
-These use cases are built on top of the `solution-patterns/` library, which provides:
+These use cases are built on top of the `research-toolkit/` library, which provides:
 
 - **Tools**: Reusable Tavily tool wrappers (`search_and_answer`, `crawl_and_summarize`, `extract_and_summarize`, `social_media_search`)
 - **Utilities**: Summarization, result formatting
@@ -275,7 +275,7 @@ use-cases/
 ├── requirements.txt
 └── README.md
 
-solution-patterns/
+research-toolkit/
 ├── tools/                          # Tavily tool wrappers
 ├── utilities/                      # Shared utilities
 └── models.py                       # Data models
@@ -283,7 +283,7 @@ solution-patterns/
 
 ## Extending These Examples
 
-1. **Add new tools**: Create wrappers in `solution-patterns/tools/` and import them into your agent
+1. **Add new tools**: Create wrappers in `research-toolkit/tools/` and import them into your agent
 2. **Customize prompts**: Modify the system prompts to change agent behavior
 3. **Change models**: Update `ModelConfig` to use different LLMs (Claude, Gemini, etc.)
 4. **Add memory**: Integrate vector stores for long-term conversation memory
