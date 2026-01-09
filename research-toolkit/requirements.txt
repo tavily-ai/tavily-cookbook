@@ -1,5 +1,5 @@
 # Core dependencies
-tavily-python>=0.7.0
+tavily-python>=0.7.17
 pydantic>=2.0.0
 tiktoken>=0.5.0
 httpx>=0.25.0
