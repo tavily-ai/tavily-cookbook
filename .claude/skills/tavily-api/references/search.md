@@ -311,7 +311,7 @@ Respond with JSON only:
 
     client = OpenAI()
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5.1",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
