@@ -51,10 +51,9 @@ def create_chatbot_agent(model_config: ModelConfig):
         report = handle_research_stream(response, stream_content_generation=False)
         return {"route": "research", "response": report}
     
-    # Add other tools here (e.g. internal research tool, etc.)
-
     return create_agent(
         model=model_config.model.model,
+        # Add other tools here (e.g. internal research tool, etc.)
         tools=[search_and_format_tool, stream_research_tool],
         system_prompt="""You are a helpful chatbot assistant with access to a research tool and a search tool. For simple questions, use the search_and_format_tool to find information.
         For complex questions, use the stream_research_tool to find information.
