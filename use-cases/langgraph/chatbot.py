@@ -9,7 +9,7 @@ parent_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.insert(0, parent_dir)
 
 load_dotenv(os.path.join(parent_dir, ".env"))
-sys.path.insert(0, os.path.join(parent_dir, "research-toolkit"))
+sys.path.insert(0, os.path.join(parent_dir, "..", "research-toolkit"))
 
 from langchain.agents import create_agent
 from langchain_core.tools import tool

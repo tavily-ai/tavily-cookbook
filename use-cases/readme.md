@@ -4,14 +4,31 @@ Production-ready agent implementations demonstrating practical applications of T
 
 Use them as starter code to get up and running quickly, or deploy them in your applications.
 
+## Choose Your Implementation
+
+Each use case is available in two flavors:
+
+| Folder | Framework | Best For |
+|--------|-----------|----------|
+| `claude_sdk/` | Anthropic SDK | Direct Claude integration, minimal dependencies, full control |
+| `langgraph/` | LangChain + LangGraph | ReAct agents, tool orchestration, ecosystem integrations |
+
+Both implementations provide identical functionality—choose based on your preferred framework.
+
 ## Prerequisites
 
 ### API Keys
 
-Set these environment variables (or create a `.env` file in the repository root):
+Set these environment variables (or create a `.env` file in the `use-cases/` directory):
 
 ```bash
+# Required for all implementations
 export TAVILY_API_KEY="your-tavily-api-key"
+
+# For claude_sdk/ implementations
+export ANTHROPIC_API_KEY="your-anthropic-api-key"
+
+# For langgraph/ implementations
 export OPENAI_API_KEY="your-openai-api-key"
 ```
 
@@ -28,7 +45,9 @@ pip install -r requirements.txt
 
 ### 1. Conversational Chatbot
 
-**File:** `chatbot.py`
+**Files:** 
+- `claude_sdk/chatbot.py`
+- `langgraph/chatbot.py`
 
 An intelligent chatbot that dynamically routes between quick web searches and deep research based on query complexity.
 
@@ -42,7 +61,7 @@ An intelligent chatbot that dynamically routes between quick web searches and de
 
 | Tool | When Used |
 |------|-----------|
-| `search_and_answer` | Simple, factual questions (e.g., "What is the capital of France?") |
+| `search_and_format` | Simple, factual questions (e.g., "What is the capital of France?") |
 | `research` | Complex queries requiring multiple sources and synthesis |
 
 #### How It Works
@@ -65,7 +84,7 @@ An intelligent chatbot that dynamically routes between quick web searches and de
                  │                                 │
                  ▼                                 ▼
 ┌─────────────────────────────┐     ┌─────────────────────────────┐
-│     search_and_answer       │     │         research            │
+│     search_and_format       │     │         research            │
 │  ┌───────────────────────┐  │     │  ┌───────────────────────┐  │
 │  │   Tavily Search API   │  │     │  │  Tavily Research API  │  │
 │  │   (5 web results)     │  │     │  │  (deep multi-source)  │  │
@@ -95,7 +114,7 @@ An intelligent chatbot that dynamically routes between quick web searches and de
               ▼                             ▼
    ┌──────────────────┐         ┌───────────────────────────┐
    │  Call search_    │         │   Generate Final Response │
-   │  and_answer      │         │   with Citations [1][2]   │
+   │  and_format      │         │   with Citations [1][2]   │
    │  again           │         └─────────────┬─────────────┘
    └────────┬─────────┘                       │
             │                                 ▼
@@ -106,14 +125,18 @@ An intelligent chatbot that dynamically routes between quick web searches and de
 ```
 
 **Key behavior:**
-- The agent can call `search_and_answer` **multiple times** to gather enough facts
+- The agent can call `search_and_format` **multiple times** to gather enough facts
 - The agent can only call `research` **once** per query (it's comprehensive but expensive)
 - All responses include numbered citations linking to sources
 
 #### Usage
 
 ```bash
-python chatbot.py
+# Using Anthropic SDK
+python claude_sdk/chatbot.py
+
+# Using LangGraph
+python langgraph/chatbot.py
 ```
 
 ```
@@ -127,7 +150,9 @@ Assistant: [Researches and provides comprehensive answer with citations]
 
 ### 2. Company Intelligence Agent
 
-**File:** `company_intelligence_deep_agent.py`
+**Files:**
+- `claude_sdk/company_intelligence_deep_agent.py`
+- `langgraph/company_intelligence_deep_agent.py`
 
 A ReAct agent that conducts comprehensive research on companies by combining website crawling with web search.
 
@@ -149,7 +174,11 @@ A ReAct agent that conducts comprehensive research on companies by combining web
 #### Usage
 
 ```bash
-python company_intelligence_deep_agent.py
+# Using Anthropic SDK
+python claude_sdk/company_intelligence_deep_agent.py
+
+# Using LangGraph
+python langgraph/company_intelligence_deep_agent.py
 ```
 
 ```
@@ -190,7 +219,9 @@ RESEARCH REPORT
 
 ### 3. Social Media Research Agent
 
-**File:** `social_media_research.py`
+**Files:**
+- `claude_sdk/social_media_research.py`
+- `langgraph/social_media_research.py`
 
 A general-purpose agent for researching any topic across social media platforms.
 
@@ -216,7 +247,11 @@ The agent can customize search parameters including:
 #### Usage
 
 ```bash
-python social_media_research.py
+# Using Anthropic SDK
+python claude_sdk/social_media_research.py
+
+# Using LangGraph
+python langgraph/social_media_research.py
 ```
 
 ```
@@ -260,25 +295,30 @@ REPORT
 
 These use cases are built on top of the `research-toolkit/` library, which provides:
 
-- **Tools**: Reusable Tavily tool wrappers (`search_and_answer`, `crawl_and_summarize`, `extract_and_summarize`, `social_media_search`)
-- **Utilities**: Summarization, result formatting
+- **Tools**: Reusable Tavily tool wrappers (`search_and_format`, `crawl_and_summarize`, `extract_and_summarize`, `social_media_search`)
+- **Utilities**: Summarization, result formatting, research streaming
 - **Models**: Pydantic models for type-safe configuration
 
 The `use-cases/utils.py` file contains shared utilities like `stream_agent_response` for streaming agent execution with progress indicators.
 
 ```
 use-cases/
-├── chatbot.py                      # Conversational agent
-├── company_intelligence_deep_agent.py  # Company research agent
-├── social_media_research.py        # Social media research agent
-├── utils.py                        # Shared utilities
+├── claude_sdk/                         # Anthropic SDK implementations
+│   ├── chatbot.py
+│   ├── company_intelligence_deep_agent.py
+│   └── social_media_research.py
+├── langgraph/                          # LangChain/LangGraph implementations
+│   ├── chatbot.py
+│   ├── company_intelligence_deep_agent.py
+│   └── social_media_research.py
+├── utils.py                            # Shared utilities
 ├── requirements.txt
 └── README.md
 
 research-toolkit/
-├── tools/                          # Tavily tool wrappers
-├── utilities/                      # Shared utilities
-└── models.py                       # Data models
+├── tools/                              # Tavily tool wrappers
+├── utilities/                          # Shared utilities
+└── models.py                           # Data models
 ```
 
 ## Extending These Examples
@@ -287,3 +327,4 @@ research-toolkit/
 2. **Customize prompts**: Modify the system prompts to change agent behavior
 3. **Change models**: Update `ModelConfig` to use different LLMs (Claude, Gemini, etc.)
 4. **Add memory**: Integrate vector stores for long-term conversation memory
+5. **Switch frameworks**: Copy logic between `claude_sdk/` and `langgraph/` implementations
