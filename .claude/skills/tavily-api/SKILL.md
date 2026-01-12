@@ -1,6 +1,6 @@
 ---
 name: tavily-api
-description: Build production-ready Tavily integrations with best practices baked in. Reference documentation for developers using coding assistants (Claude Code, Cursor, etc.) to implement web search, content extraction, crawling, and research in agentic workflows, RAG systems, or autonomous agents.
+description: "Build production-ready Tavily integrations with best practices baked in. Reference documentation for developers using coding assistants (Claude Code, Cursor, etc.) to implement web search, content extraction, crawling, and research in agentic workflows, RAG systems, or autonomous agents."
 ---
 
 Tavily is a specialized search API designed specifically for LLMs, enabling developers to build AI applications that can access real-time, accurate web data. Let's use the Python SDK to build with tavily.
