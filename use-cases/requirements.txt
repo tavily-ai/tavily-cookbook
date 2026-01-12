@@ -3,11 +3,15 @@ tavily-python>=0.7.17
 
 # LangChain ecosystem
 langchain>=0.3.0
+langchain-anthropic>=0.3.0
 langchain-openai>=0.2.0
 langgraph>=0.2.0
 
 # Data validation
 pydantic>=2.0.0
+
+# Anthropic SDK (for Claude)
+anthropic>=0.40.0
 
 # Utilities
 python-dotenv>=1.0.0
