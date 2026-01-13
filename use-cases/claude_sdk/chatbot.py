@@ -28,7 +28,7 @@ sys.path.insert(0, parent_dir)
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv(os.path.join(parent_dir, ".env"))
 
-sys.path.insert(0, os.path.join(parent_dir, "..", "research-toolkit"))
+sys.path.insert(0, os.path.join(parent_dir, "..", "agent-toolkit"))
 
 from tools.search_and_format import search_and_format
 from utilities.research_stream import handle_research_stream

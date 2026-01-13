@@ -293,7 +293,7 @@ REPORT
 
 ## Architecture
 
-These use cases are built on top of the `research-toolkit/` library, which provides:
+These use cases are built on top of the `agent-toolkit/` library, which provides:
 
 - **Tools**: Reusable Tavily tool wrappers (`search_and_format`, `crawl_and_summarize`, `extract_and_summarize`, `social_media_search`)
 - **Utilities**: Summarization, result formatting, research streaming
@@ -315,7 +315,7 @@ use-cases/
 ├── requirements.txt
 └── README.md
 
-research-toolkit/
+agent-toolkit/
 ├── tools/                              # Tavily tool wrappers
 ├── utilities/                          # Shared utilities
 └── models.py                           # Data models
@@ -323,7 +323,7 @@ research-toolkit/
 
 ## Extending These Examples
 
-1. **Add new tools**: Create wrappers in `research-toolkit/tools/` and import them into your agent
+1. **Add new tools**: Create wrappers in `agent-toolkit/tools/` and import them into your agent
 2. **Customize prompts**: Modify the system prompts to change agent behavior
 3. **Change models**: Update `ModelConfig` to use different LLMs (Claude, Gemini, etc.)
 4. **Add memory**: Integrate vector stores for long-term conversation memory

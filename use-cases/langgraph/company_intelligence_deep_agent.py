@@ -14,11 +14,11 @@ from typing import List, Optional
 
 from dotenv import load_dotenv
 
-# Add research-toolkit directory to path for imports
+# Add agent-toolkit directory to path for imports
 parent_dir = os.path.join(os.path.dirname(__file__), "..")
 root_dir = os.path.join(parent_dir, "..")
 sys.path.insert(0, parent_dir)
-sys.path.insert(0, os.path.join(root_dir, "research-toolkit"))
+sys.path.insert(0, os.path.join(root_dir, "agent-toolkit"))
 
 # Load environment variables from .env file
 load_dotenv(os.path.join(parent_dir, ".env"))
