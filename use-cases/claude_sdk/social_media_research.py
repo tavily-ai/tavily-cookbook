@@ -32,7 +32,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv(os.path.join(parent_dir, ".env"))
 load_dotenv(os.path.join(root_dir, ".env"))
 
-sys.path.insert(0, os.path.join(root_dir, "research-toolkit"))
+sys.path.insert(0, os.path.join(root_dir, "agent-toolkit"))
 
 from tools.social_media import social_media_search
 

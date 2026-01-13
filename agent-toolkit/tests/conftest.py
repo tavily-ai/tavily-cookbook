@@ -1,11 +1,11 @@
-"""Pytest configuration for research-toolkit tests."""
+"""Pytest configuration for agent-toolkit tests."""
 
 import sys
 from pathlib import Path
 
 import pytest
 
-# Add research-toolkit/ to path for imports
+# Add agent-toolkit/ to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 pytest_plugins = ("pytest_asyncio",)

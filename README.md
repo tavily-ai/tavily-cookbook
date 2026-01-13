@@ -2,12 +2,18 @@
 
 Learn to build AI applications with [Tavily](https://tavily.com) — a search API designed for LLMs and AI agents.
 
+## Contribute!
+
+Built something cool with Tavily? We'd love to see it. **Open a PR** to add your tools, agents, or use-cases.
+
+Have a request? Open an issue.
+
 ## Structure
 
 | Directory | Purpose |
 |-----------|---------|
 | [**Cookbooks**](./cookbooks) | Click-through Jupyter notebooks for getting started with the Tavily API |
-| [**Research Toolkit**](./research-toolkit) | Production-ready tools, agents, and utilities to build research agents faster |
+| [**Agent Toolkit**](./agent-toolkit) | Production-ready tools, agents, and utilities to build research agents faster |
 | [**Agent skills**](./.claude/skills) | Folders of instructions, scripts, and resources that agents can discover and use to do things more accurately and efficiently |
 
 ## Agent Skills
