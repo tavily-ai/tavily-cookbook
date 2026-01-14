@@ -22,45 +22,52 @@ Models:
     - Various TypedDicts for API responses
 """
 
-from .models import (
-    ModelConfig,
-    ModelObject,
-    ModelProvider,
-    OutputSchema,
-    SearchResult,
-    ImageResult,
-    SearchDedupResponse,
-    WebSource,
-    HybridResearchResponse,
-    TavilyAPIResponse,
-    TavilyUsage,
-    LLMUsage,
-    LLMResponse,
-    ToolUsageStats,
-)
+# Handle both package imports (via pip install) and direct imports (pytest)
+# When imported as a package, relative imports work. When imported directly, they fail.
+try:
+    from .models import (
+        ModelConfig,
+        ModelObject,
+        ModelProvider,
+        OutputSchema,
+        SearchResult,
+        ImageResult,
+        SearchDedupResponse,
+        WebSource,
+        HybridResearchResponse,
+        TavilyAPIResponse,
+        TavilyUsage,
+        LLMUsage,
+        LLMResponse,
+        ToolUsageStats,
+    )
 
-from .tools import (
-    search_and_answer,
-    search_and_format,
-    search_dedup,
-    crawl_and_summarize,
-    extract_and_summarize,
-    social_media_search,
-)
+    from .tools import (
+        search_and_answer,
+        search_and_format,
+        search_dedup,
+        crawl_and_summarize,
+        extract_and_summarize,
+        social_media_search,
+    )
 
-from .agents import hybrid_research
+    from .agents import hybrid_research
 
-from .utilities import (
-    ainvoke_with_fallback,
-    clean_raw_content,
-    clean_formatted_output,
-    count_tokens,
-    summarize_long_content,
-    generate_subqueries,
-    synthesize_results,
-    format_web_results,
-    handle_research_stream,
-)
+    from .utilities import (
+        ainvoke_with_fallback,
+        clean_raw_content,
+        clean_formatted_output,
+        count_tokens,
+        summarize_long_content,
+        generate_subqueries,
+        synthesize_results,
+        format_web_results,
+        handle_research_stream,
+    )
+except ImportError:
+    # Direct import (e.g., pytest running from agent-toolkit directory)
+    # Skip imports - tests should import from tavily_agent_toolkit package directly
+    pass
 
 __version__ = "0.1.0"
 

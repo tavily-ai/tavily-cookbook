@@ -5,9 +5,8 @@ import os
 from pathlib import Path
 
 import pytest
-from agents.hybrid_researcher import hybrid_research
 from dotenv import load_dotenv
-from models import ModelConfig, ModelObject, OutputSchema
+from tavily_agent_toolkit import ModelConfig, ModelObject, OutputSchema, hybrid_research
 from pydantic import Field
 
 

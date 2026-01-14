@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
-from tools.search_and_format import search_and_format
+from tavily_agent_toolkit import search_and_format
 
-# Load .env from project root
+# Load .env from agent-toolkit folder
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
