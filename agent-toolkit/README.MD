@@ -34,9 +34,12 @@ Research primitives that combine Tavily endpoints with context engineering. Each
 | `extract_and_summarize` | Get focused summaries from specific URLs |
 | `social_media_search` | Search Reddit, X, LinkedIn, TikTok, etc. |
 
-```python
 # Example: Answer a question with comprehensive web research
-%%pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit%%
+```bash
+pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
+```
+
+```python
 
 from tavily_agent_toolkit import social_media_search
 from models import ModelConfig, ModelObject
