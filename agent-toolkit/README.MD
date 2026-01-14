@@ -73,7 +73,7 @@ You provide a RAG function that queries your internal data. The agent identifies
 4. Synthesize into a comprehensive report
 
 ```python
-from agents.hybrid_researcher import hybrid_research, ModelConfig, ModelObject
+from tavily_agent_toolkit import hybrid_research, ModelConfig, ModelObject
 
 result = await hybrid_research(
     api_key="tvly-xxx",

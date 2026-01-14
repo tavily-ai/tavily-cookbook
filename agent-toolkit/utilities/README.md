@@ -9,7 +9,7 @@ Helper functions that power the tools and agents. Most are internal, but a few a
 Parse and display streaming responses from Tavily's Research API. Handles SSE events, tool calls, and content chunks.
 
 ```python
-from utilities.research_stream import handle_research_stream
+from tavily_agent_toolkit import handle_research_stream
 
 response = client.research(query="...", stream=True)
 report = handle_research_stream(response, verbose=True)
@@ -22,7 +22,7 @@ report = handle_research_stream(response, verbose=True)
 Remove web noise from raw HTML/markdown content—navigation elements, boilerplate, social buttons, markdown artifacts.
 
 ```python
-from utilities.utils import clean_raw_content
+from tavily_agent_toolkit import clean_raw_content
 
 cleaned = clean_raw_content(raw_webpage_content)
 ```
@@ -34,7 +34,7 @@ cleaned = clean_raw_content(raw_webpage_content)
 Format search results into a structured string optimized for LLM consumption.
 
 ```python
-from utilities.utils import format_web_results
+from tavily_agent_toolkit import format_web_results
 
 formatted = format_web_results(search_results)
 ```
@@ -46,8 +46,7 @@ formatted = format_web_results(search_results)
 **Model cascades are critical for LLM-heavy workflows.** This function handles automatic fallback when models fail—rate limits, outages, or errors trigger the next model in the chain.
 
 ```python
-from utilities.utils import ainvoke_with_fallback
-from models import ModelConfig, ModelObject
+from tavily_agent_toolkit import ainvoke_with_fallback, ModelConfig, ModelObject
 
 config = ModelConfig(
     model=ModelObject(model="gpt-4o"),
