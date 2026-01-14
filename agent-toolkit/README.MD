@@ -41,8 +41,7 @@ pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=ag
 
 ```python
 
-from tavily_agent_toolkit import social_media_search
-from models import ModelConfig, ModelObject
+from tavily_agent_toolkit import social_media_search, ModelConfig, ModelObject
 
 result = await social_media_search(
     query="Who is Leo Messi?",
@@ -74,8 +73,7 @@ You provide a RAG function that queries your internal data. The agent identifies
 4. Synthesize into a comprehensive report
 
 ```python
-from agents.hybrid_researcher import hybrid_research
-from models import ModelConfig, ModelObject
+from agents.hybrid_researcher import hybrid_research, ModelConfig, ModelObject
 
 result = await hybrid_research(
     api_key="tvly-xxx",
