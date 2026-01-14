@@ -36,16 +36,16 @@ Research primitives that combine Tavily endpoints with context engineering. Each
 
 ```python
 # Example: Answer a question with comprehensive web research
-from tools.search_and_answer import search_and_answer
+%%pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit%%
+
+from tavily_agent_toolkit import social_media_search
 from models import ModelConfig, ModelObject
 
-result = await search_and_answer(
-    query="What are the latest developments in quantum computing?",
+result = await social_media_search(
+    query="Who is Leo Messi?"
     api_key="tvly-xxx",
-    model_config=ModelConfig(model=ModelObject(model="gpt-5.2")),
-    max_number_of_subqueries=3,
 )
-print(result["answer"])
+print(result["result"])
 ```
 
 > 📖 See [`tools/README.md`](tools/README.md) for detailed documentation, parameters, and examples.
@@ -106,12 +106,6 @@ Then import and use:
 from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_research
 ```
 
-**Option 2: Copy the code** (recommended for customization)
-
-Clone the repo and copy `agent-toolkit/` into your project. Modify the tools and prompts to fit your needs.
-
----
-
 **What's included in the install:**
 
 | Category | Exports |
@@ -122,6 +116,12 @@ Clone the repo and copy `agent-toolkit/` into your project. Modify the tools and
 | **Models** | `ModelConfig`, `ModelObject`, `OutputSchema`, and various TypedDicts |
 
 We'll do our best to keep these tools up to date as patterns evolve and the Tavily API improves. Check back for updates or watch the repo.
+
+---
+
+**Option 2: Copy the code** (recommended for customization)
+
+Clone the repo and copy `agent-toolkit/` into your project. Modify the tools and prompts to fit your needs.
 
 ---
 
