@@ -1,0 +1,9 @@
+# Tavily SDK
+tavily-python>=0.7.17
+git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
+
+# Anthropic SDK (for Claude)
+anthropic>=0.40.0
+
+# Utilities
+python-dotenv>=1.0.0
