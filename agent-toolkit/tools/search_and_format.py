@@ -1,9 +1,10 @@
 from typing import Any, Dict, List, Literal, Optional, Sequence, Union, cast
 
 from tavily import TavilyClient
-from tools.async_search_and_dedup import search_dedup
-from utilities.utils import (clean_formatted_output, format_web_results,
-                             search_with_retry)
+
+from ..utilities.utils import (clean_formatted_output, format_web_results,
+                               search_with_retry)
+from .async_search_and_dedup import search_dedup
 
 
 async def search_and_format(

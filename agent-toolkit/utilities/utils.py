@@ -6,8 +6,8 @@ from typing import (Any, Callable, Optional, Sequence, Type, TypeVar, Union,
 
 import tiktoken
 from langchain.chat_models import init_chat_model
-from models import (LLMResponse, LLMUsage, ModelConfig, SearchResult,
-                    TavilyAPIResponse)
+from ..models import (LLMResponse, LLMUsage, ModelConfig, SearchResult,
+                      TavilyAPIResponse)
 from pydantic import BaseModel
 
 T = TypeVar("T")

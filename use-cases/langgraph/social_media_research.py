@@ -9,24 +9,18 @@ real-world opinions, discussions, and insights on any topic.
 import asyncio
 import os
 import sys
+from pathlib import Path
 from typing import Literal, Optional
 
 from dotenv import load_dotenv
 
-# Add agent-toolkit directory to path for imports
-parent_dir = os.path.join(os.path.dirname(__file__), "..")
-root_dir = os.path.join(parent_dir, "..")
-sys.path.insert(0, parent_dir)
-sys.path.insert(0, os.path.join(root_dir, "agent-toolkit"))
-
 # Load environment variables from .env file
-load_dotenv(os.path.join(parent_dir, ".env"))
+load_dotenv(Path(__file__).parent / ".env")
 
 from langchain.agents import create_agent
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
-from tools.social_media import social_media_search
-from utils import stream_agent_response
+from tavily_agent_toolkit import social_media_search
 
 # Get API keys from environment
 TAVILY_API_KEY: str = os.environ.get("TAVILY_API_KEY", "")
@@ -37,6 +31,20 @@ if not TAVILY_API_KEY:
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY environment variable is required")
 
+async def stream_agent_response(agent, inputs: dict) -> str:
+    """Stream agent execution, printing tool calls/completions, and return final response."""
+    final_response = None
+    async for chunk in agent.astream(inputs, stream_mode="updates"):
+        for node_output in chunk.values():
+            for msg in node_output.get("messages", []):
+                if hasattr(msg, "tool_calls") and msg.tool_calls:
+                    for tool_call in msg.tool_calls:
+                        print(f"🔧 Calling: {tool_call['name']}")
+                elif hasattr(msg, "name") and msg.name:
+                    print(f"✅ {msg.name} completed")
+                elif hasattr(msg, "content") and msg.content:
+                    final_response = msg.content
+    return final_response or "No response generated"
 
 @tool
 def search_social_media(

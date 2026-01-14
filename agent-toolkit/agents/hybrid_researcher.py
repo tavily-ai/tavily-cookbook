@@ -5,12 +5,12 @@ import httpx
 from pydantic import BaseModel
 from tavily import TavilyClient
 
-from utilities.utils import (ainvoke_with_fallback, clean_formatted_output,
-                           format_web_results, generate_subqueries,
-                           synthesize_results)
-from models import (HybridResearchResponse, LLMUsage, ModelConfig,
-                          OutputSchema, ToolUsageStats)
-from tools.async_search_and_dedup import search_dedup
+from ..utilities.utils import (ainvoke_with_fallback, clean_formatted_output,
+                               format_web_results, generate_subqueries,
+                               synthesize_results)
+from ..models import (HybridResearchResponse, LLMUsage, ModelConfig,
+                      OutputSchema, ToolUsageStats)
+from ..tools.async_search_and_dedup import search_dedup
 
 
 async def hybrid_research(

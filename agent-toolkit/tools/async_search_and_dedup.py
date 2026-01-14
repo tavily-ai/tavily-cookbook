@@ -9,8 +9,8 @@ from typing import Any, Optional, Union
 
 from tavily import AsyncTavilyClient
 
-from utilities.utils import async_retry
-from models import SearchDedupResponse, TavilyAPIResponse, TavilyUsage
+from ..models import SearchDedupResponse, TavilyAPIResponse, TavilyUsage
+from ..utilities.utils import async_retry
 
 
 async def search_dedup(
