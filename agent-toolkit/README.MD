@@ -45,7 +45,7 @@ from tavily_agent_toolkit import social_media_search
 from models import ModelConfig, ModelObject
 
 result = await social_media_search(
-    query="Who is Leo Messi?"
+    query="Who is Leo Messi?",
     api_key="tvly-xxx",
 )
 print(result["result"])
