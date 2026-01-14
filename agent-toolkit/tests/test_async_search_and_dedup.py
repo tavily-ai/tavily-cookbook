@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from tools.async_search_and_dedup import _deduplicate_by_url, search_dedup
+from tavily_agent_toolkit import search_dedup
+from tavily_agent_toolkit.tools.async_search_and_dedup import _deduplicate_by_url
 
 # Load .env from project root
 load_dotenv(Path(__file__).parent.parent / ".env")

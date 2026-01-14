@@ -16,25 +16,14 @@ Usage:
 import asyncio
 import json
 import os
-import sys
-from typing import Optional
+from pathlib import Path
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
+from tavily_agent_toolkit import social_media_search
 
-# Add parent directories to path for imports
-parent_dir = os.path.join(os.path.dirname(__file__), "..")
-root_dir = os.path.join(parent_dir, "..")
-sys.path.insert(0, root_dir)
-
-# Load .env from claude_sdk directory first, then parent directories as fallback
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
-load_dotenv(os.path.join(parent_dir, ".env"))
-load_dotenv(os.path.join(root_dir, ".env"))
-
-sys.path.insert(0, os.path.join(root_dir, "agent-toolkit"))
-
-from tools.social_media import social_media_search
+# Load .env from the same folder as this script
+load_dotenv(Path(__file__).parent / ".env")
 
 # Get API keys from environment
 TAVILY_API_KEY: str = os.environ.get("TAVILY_API_KEY", "")

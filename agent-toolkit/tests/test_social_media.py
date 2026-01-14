@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-from tools.social_media import PLATFORM_DOMAINS, social_media_search
+from tavily_agent_toolkit import social_media_search
+from tavily_agent_toolkit.tools.social_media import PLATFORM_DOMAINS
 
 # Load .env from project root
 load_dotenv(Path(__file__).parent.parent / ".env")

@@ -94,9 +94,36 @@ Helper functions that power the tools and agents. A few are reusable on their ow
 
 ## Installation
 
+**Option 1: Install directly** (recommended for quick start)
+
 ```bash
-pip install tavily-python
+pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
 ```
+
+Then import and use:
+
+```python
+from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_research
+```
+
+**Option 2: Copy the code** (recommended for customization)
+
+Clone the repo and copy `agent-toolkit/` into your project. Modify the tools and prompts to fit your needs.
+
+---
+
+**What's included in the install:**
+
+| Category | Exports |
+|----------|---------|
+| **Tools** | `search_and_answer`, `search_and_format`, `search_dedup`, `crawl_and_summarize`, `extract_and_summarize`, `social_media_search` |
+| **Agents** | `hybrid_research` |
+| **Utilities** | `handle_research_stream`, `format_web_results`, `clean_raw_content`, `ainvoke_with_fallback`, and more |
+| **Models** | `ModelConfig`, `ModelObject`, `OutputSchema`, and various TypedDicts |
+
+We'll do our best to keep these tools up to date as patterns evolve and the Tavily API improves. Check back for updates or watch the repo.
+
+---
 
 For LLM features, install your preferred provider:
 

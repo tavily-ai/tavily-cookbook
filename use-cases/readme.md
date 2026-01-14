@@ -34,10 +34,17 @@ export OPENAI_API_KEY="your-openai-api-key"
 
 ### Installation
 
+Each implementation has its own requirements file with only the dependencies it needs:
+
 ```bash
-cd use-cases
-pip install -r requirements.txt
+# For claude_sdk/ implementations
+pip install -r use-cases/claude_sdk/requirements.txt
+
+# For langgraph/ implementations
+pip install -r use-cases/langgraph/requirements.txt
 ```
+
+> **Note:** The requirements include `git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit` which installs the `tavily_agent_toolkit` package directly from this repository. This provides the reusable tools (`search_and_format`, `crawl_and_summarize`, `social_media_search`, etc.) used by these agents.
 
 ---
 
@@ -306,13 +313,13 @@ use-cases/
 ├── claude_sdk/                         # Anthropic SDK implementations
 │   ├── chatbot.py
 │   ├── company_intelligence_deep_agent.py
-│   └── social_media_research.py
+│   ├── social_media_research.py
+│   └── requirements.txt
 ├── langgraph/                          # LangChain/LangGraph implementations
 │   ├── chatbot.py
 │   ├── company_intelligence_deep_agent.py
-│   └── social_media_research.py
-├── utils.py                            # Shared utilities
-├── requirements.txt
+│   ├── social_media_research.py
+│   └── requirements.txt
 └── README.md
 
 agent-toolkit/

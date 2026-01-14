@@ -1,21 +1,16 @@
 import asyncio
 import os
-import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 from tavily import TavilyClient
 
-parent_dir = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, parent_dir)
-
-load_dotenv(os.path.join(parent_dir, ".env"))
-sys.path.insert(0, os.path.join(parent_dir, "..", "agent-toolkit"))
+load_dotenv(Path(__file__).parent / ".env")
 
 from langchain.agents import create_agent
 from langchain_core.tools import tool
-from models import ModelConfig, ModelObject
-from tools.search_and_format import search_and_format
-from utilities.research_stream import handle_research_stream
+from tavily_agent_toolkit import (ModelConfig, ModelObject,
+                                  handle_research_stream, search_and_format)
 
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
 

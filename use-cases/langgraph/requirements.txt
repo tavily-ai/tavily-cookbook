@@ -1,0 +1,11 @@
+# Tavily SDK
+tavily-python>=0.7.17
+git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
+
+# LangChain ecosystem
+langchain>=0.3.0
+langchain-core>=0.3.0
+langchain-openai>=0.2.0
+
+# Utilities
+python-dotenv>=1.0.0

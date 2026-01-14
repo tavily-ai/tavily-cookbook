@@ -9,28 +9,19 @@ by crawling their website and searching for relevant information across the web.
 
 import asyncio
 import os
-import sys
+from pathlib import Path
 from typing import List, Optional
 
 from dotenv import load_dotenv
 
-# Add agent-toolkit directory to path for imports
-parent_dir = os.path.join(os.path.dirname(__file__), "..")
-root_dir = os.path.join(parent_dir, "..")
-sys.path.insert(0, parent_dir)
-sys.path.insert(0, os.path.join(root_dir, "agent-toolkit"))
-
 # Load environment variables from .env file
-load_dotenv(os.path.join(parent_dir, ".env"))
+load_dotenv(Path(__file__).parent / ".env")
 
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from models import ModelConfig, ModelObject
-from tools.async_search_and_dedup import search_dedup
-from tools.crawl_and_summarize import crawl_and_summarize
-from tools.extract_and_summarize import extract_and_summarize
-from utilities.utils import format_web_results
-from utils import stream_agent_response
+from tavily_agent_toolkit import (ModelConfig, ModelObject,
+                                  crawl_and_summarize, extract_and_summarize,
+                                  format_web_results, search_dedup)
 
 # Get API keys from environment
 TAVILY_API_KEY: str = os.environ.get("TAVILY_API_KEY", "")
@@ -48,6 +39,21 @@ SUMMARIZER_CONFIG = ModelConfig(
         api_key=OPENAI_API_KEY,
     ),
 )
+
+async def stream_agent_response(agent, inputs: dict) -> str:
+    """Stream agent execution, printing tool calls/completions, and return final response."""
+    final_response = None
+    async for chunk in agent.astream(inputs, stream_mode="updates"):
+        for node_output in chunk.values():
+            for msg in node_output.get("messages", []):
+                if hasattr(msg, "tool_calls") and msg.tool_calls:
+                    for tool_call in msg.tool_calls:
+                        print(f"🔧 Calling: {tool_call['name']}")
+                elif hasattr(msg, "name") and msg.name:
+                    print(f"✅ {msg.name} completed")
+                elif hasattr(msg, "content") and msg.content:
+                    final_response = msg.content
+    return final_response or "No response generated"
 
 async def crawl_company_website(
     url: str,

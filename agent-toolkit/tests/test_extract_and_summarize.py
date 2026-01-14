@@ -7,8 +7,7 @@ import pytest
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 
-from models import ModelConfig, ModelObject
-from tools.extract_and_summarize import extract_and_summarize
+from tavily_agent_toolkit import ModelConfig, ModelObject, extract_and_summarize
 
 
 class PageSummary(BaseModel):

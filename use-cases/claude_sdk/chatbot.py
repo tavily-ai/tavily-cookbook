@@ -15,23 +15,15 @@ Usage:
 import asyncio
 import json
 import os
-import sys
+from pathlib import Path
 
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from tavily import TavilyClient
+from tavily_agent_toolkit import handle_research_stream, search_and_format
 
-parent_dir = os.path.join(os.path.dirname(__file__), "..")
-sys.path.insert(0, parent_dir)
-
-# Load .env from use-cases directory first, then parent directory as fallback
-load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
-load_dotenv(os.path.join(parent_dir, ".env"))
-
-sys.path.insert(0, os.path.join(parent_dir, "..", "agent-toolkit"))
-
-from tools.search_and_format import search_and_format
-from utilities.research_stream import handle_research_stream
+# Load .env from the same folder as this script
+load_dotenv(Path(__file__).parent / ".env")
 
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")

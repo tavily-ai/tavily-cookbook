@@ -6,9 +6,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-
-from models import ModelConfig, ModelObject
-from tools.search_and_answer import search_and_answer
+from tavily_agent_toolkit import ModelConfig, ModelObject, search_and_answer
 
 # Load .env from project root
 load_dotenv(Path(__file__).parent.parent / ".env")
