@@ -2,6 +2,9 @@
 
 Build production-grade research agents with patterns we've battle-tested across customer deployments and our deep research endpoint.
 
+https://github.com/user-attachments/assets/0b636d61-441b-407a-b2ab-b700dd2d0d0b
+▶️ [Here's the link](https://screen.studio/share/lj4IQxMu)
+
 ## What This Library Provides
 
 **Tools** — Optimized configurations of Tavily API calls for common research patterns. We handle the context engineering (formatting, deduplication, token management, summarization) so your agent gets clean, relevant data.
