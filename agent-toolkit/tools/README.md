@@ -21,8 +21,7 @@ Answer a question using web research. Optionally generates subqueries for compre
 **Key parameters:** `query`, `model_config`, `max_number_of_subqueries` (2-4), `output_schema`, `token_limit` (default 50k), `threshold` (default 0.3), `topic` ("general"/"news"/"finance"), `time_range`, `include_domains`, `exclude_domains`
 
 ```python
-from tools.search_and_answer import search_and_answer
-from models import ModelConfig, ModelObject
+from tavily_agent_toolkit import search_and_answer, ModelConfig, ModelObject
 
 result = await search_and_answer(
     query="What are the pros and cons of Rust vs Go?",
@@ -42,7 +41,7 @@ Run multiple search queries in parallel and consolidate results. Deduplicates by
 **Key parameters:** `queries`, `search_depth` ("advanced"), `topic`, `max_results` (5), `chunks_per_source` (3), `time_range`, `include_domains`, `exclude_domains`
 
 ```python
-from tools.async_search_and_dedup import search_dedup
+from tavily_agent_toolkit import async_search_and_dedup
 
 results = await search_dedup(
     api_key="tvly-xxx",
@@ -68,8 +67,7 @@ Crawl an entire website and summarize the content. Bring your own model for the 
 **Key parameters:** `url`, `model_config`, `instructions`, `output_schema`, `max_depth` (1-5), `max_breadth` (20), `limit` (50), `select_paths`, `exclude_paths`
 
 ```python
-from tools.crawl_and_summarize import crawl_and_summarize
-from models import ModelConfig, ModelObject
+from tavily_agent_toolkit import crawl_and_summarize, ModelConfig, ModelObject
 
 result = await crawl_and_summarize(
     url="https://docs.example.com",
@@ -90,8 +88,7 @@ Extract content from specific URLs and summarize with your model. Use when you a
 **Key parameters:** `urls` (max 20), `model_config`, `query` (focuses extraction), `output_schema`, `chunks_per_source` (5), `extract_depth` ("basic"/"advanced")
 
 ```python
-from tools.extract_and_summarize import extract_and_summarize
-from models import ModelConfig, ModelObject
+from tavily_agent_toolkit import extract_and_summarize, ModelConfig, ModelObject
 
 result = await extract_and_summarize(
     urls=["https://en.wikipedia.org/wiki/Artificial_intelligence"],
@@ -111,7 +108,7 @@ Search specific social platforms for discussions and content.
 **Key parameters:** `query`, `platform` ("reddit"/"x"/"linkedin"/"tiktok"/"instagram"/"facebook"/"combined"), `include_raw_content`, `max_results` (5), `time_range`
 
 ```python
-from tools.social_media import social_media_search
+from tavily_agent_toolkit import social_media_search
 
 results = social_media_search(
     query="best practices for LLM fine-tuning",

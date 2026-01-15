@@ -89,8 +89,7 @@ Best for: Quick answers, lower latency, cost-sensitive applications.
 ```
 
 ```python
-from agents.hybrid_researcher import hybrid_research
-from models import ModelConfig, ModelObject
+from tavily_agent_toolkit import hybrid_research, ModelConfig, ModelObject
 
 # Your RAG function - returns relevant context from your knowledge base
 def my_rag(query: str) -> str:
