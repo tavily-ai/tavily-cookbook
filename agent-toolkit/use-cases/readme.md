@@ -6,20 +6,21 @@ Use them as starter code to get up and running quickly, or deploy them in your a
 
 ## Choose Your Implementation
 
-Each use case is available in two flavors:
+Each use case is available in multiple flavors:
 
 | Folder | Framework | Best For |
 |--------|-----------|----------|
 | `claude_sdk/` | Anthropic SDK | Direct Claude integration, minimal dependencies, full control |
 | `langgraph/` | LangChain + LangGraph | ReAct agents, tool orchestration, ecosystem integrations |
+| `quickstart-notebooks/` | Jupyter Notebooks | Interactive exploration, quick prototyping, learning |
 
-Both implementations provide identical functionality—choose based on your preferred framework.
+The `claude_sdk/` and `langgraph/` implementations provide identical functionality—choose based on your preferred framework. Notebooks are standalone examples for quick experimentation.
 
 ## Prerequisites
 
 ### API Keys
 
-Set these environment variables (or create a `.env` file in the `use-cases/` directory):
+Set these environment variables (or create a `.env` file in the `agent-toolkit/use-cases/` directory):
 
 ```bash
 # Required for all implementations
@@ -38,10 +39,10 @@ Each implementation has its own requirements file with only the dependencies it 
 
 ```bash
 # For claude_sdk/ implementations
-pip install -r use-cases/claude_sdk/requirements.txt
+pip install -r agent-toolkit/use-cases/claude_sdk/requirements.txt
 
 # For langgraph/ implementations
-pip install -r use-cases/langgraph/requirements.txt
+pip install -r agent-toolkit/use-cases/langgraph/requirements.txt
 ```
 
 > **Note:** The requirements include `git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit` which installs the `tavily_agent_toolkit` package directly from this repository. This provides the reusable tools (`search_and_format`, `crawl_and_summarize`, `social_media_search`, etc.) used by these agents.
