@@ -28,7 +28,6 @@ def social_media_search(
     platform: Literal["tiktok", "facebook", "instagram", "reddit", "linkedin", "x", "combined"] = "combined",
     include_raw_content: bool = False,
     max_results: Optional[int] = 5,
-    search_depth: Literal["basic", "advanced"] = "basic",
     include_answer: bool = False,
     include_images: bool = False,
     time_range: Optional[Literal["day", "week", "month", "year"]] = None,
@@ -104,7 +103,7 @@ def social_media_search(
     search_params = {
         "query": query,
         "max_results": max_results,
-        "search_depth": search_depth,
+        "search_depth": "basic",
         "include_domains": include_domains,
         "include_raw_content": False,  # Always False; we handle this manually
         "include_answer": include_answer,
