@@ -14,33 +14,24 @@ Have a request? Open an issue.
 |-----------|---------|
 | [**Cookbooks**](./cookbooks) | Click-through Jupyter notebooks for getting started with the Tavily API |
 | [**Agent Toolkit**](./agent-toolkit) | Production-ready tools, agents, and utilities to build research agents faster.<br>Install with `pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit` |
-| [**Agent skills**](./.claude/skills) | Folders of instructions, scripts, and resources that agents can discover and use to do things more accurately and efficiently |
 
-## Agent Skills
+## Claude Code Plugin
 
-This repo includes [Agent skills](https://docs.anthropic.com/en/docs/claude-code/skills) for two use cases:
+**For Claude Code developers:** Tavily skills are now available as an official Claude Code plugin at [**tavily-ai/tavily-plugins**](https://github.com/tavily-ai/tavily-plugins).
 
-### For Agent Builders
+The plugin serves two purposes:
 
-Skills that teach coding assistants (Claude Code, Cursor, etc.) Tavily best practices. Install via Claude Code and your AI assistant will know how to build with Tavily.
+- **Building with Tavily:** Includes comprehensive API reference documentation. Claude automatically uses this when you ask it to integrate Tavily into your code, making Claude a Tavily API expert.
+- **Web research in your terminal:** Access real-time web data, run deep research, and crawl documentation directly in your terminal.
 
-| Skill | Description |
-|-------|-------------|
-| [`tavily-api`](./.claude/skills/tavily-api/SKILL.md) | Comprehensive Tavily API reference with best practices baked in |
+Install directly from the Claude Code marketplace:
 
-### For Terminal Workflows
+```
+/plugin marketplace add tavily-ai/tavily-plugins
+/plugin install tavily@tavily-plugins
+```
 
-Real-time web data as context directly in your terminal and IDE. Tavily is a gateway to web data in your coding workflow through agent skills.
-
-| Skill | What it does |
-|-------|--------------|
-| [`research`](./.claude/skills/research/SKILL.md) | Deep research directly in your terminal with AI-synthesized insights and citations |
-| [`crawl-url`](./.claude/skills/crawl-url/SKILL.md) | Crawl documentation at scale - discover and scrape up to 100 pages in seconds |
-| [`technical-trends-discovery`](./.claude/skills/technical-trends-discovery/SKILL.md) | Discover emerging AI/tech trends from thought leaders |
-
-## Automation-First
-
-This repo is maintained by Tavily engineers, in collaboration with Claude Code. The skills above double as working examples of what you can build with Tavily.
+See the [plugin repo](https://github.com/tavily-ai/tavily-plugins) for full installation instructions and usage examples.
 
 ## Prerequisites
 
