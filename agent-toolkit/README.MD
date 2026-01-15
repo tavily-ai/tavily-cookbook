@@ -18,8 +18,9 @@ agent-toolkit/
 ├── agents/          # Pre-built research agents
 ├── utilities/       # Context engineering utilities
 ├── models.py        # Type definitions
-└── tests/           # Test suite
+├── tests/           # Test suite
 ├── evals/           # Evaluation code and examples for your research agents (coming soon...)
+└── use-cases/       # Real-world implementation examples
 ```
 
 ## Tools
@@ -36,7 +37,7 @@ Research primitives that combine Tavily endpoints with context engineering. Each
 
 # Example: Answer a question with comprehensive web research
 ```bash
-pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
+pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit 
 ```
 
 ```python
@@ -92,6 +93,20 @@ result = await hybrid_research(
 Helper functions that power the tools and agents. A few are reusable on their own: `handle_research_stream`, `clean_raw_content`, `format_web_results`, and `ainvoke_with_fallback` for model cascades.
 
 > 📖 See [`utilities/README.md`](utilities/README.md) for details.
+
+## Use Cases
+
+Production-ready agent implementations demonstrating practical applications. Each example combines multiple Tavily tools with LLM agents to solve real-world problems.
+
+| Use Case | Description |
+|----------|-------------|
+| Conversational Chatbot | Routes between quick search and deep research based on query complexity |
+| Company Intelligence Agent | Crawls websites and searches the web for comprehensive company research |
+| Social Media Research Agent | Searches across TikTok, Reddit, X, LinkedIn, and more |
+
+Available in both Anthropic SDK and LangGraph implementations, plus Jupyter notebooks for quick experimentation.
+
+> 📖 See [`use-cases/readme.md`](use-cases/readme.md) for full documentation and examples.
 
 ## Installation
 
