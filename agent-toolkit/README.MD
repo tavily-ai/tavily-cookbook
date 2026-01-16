@@ -48,7 +48,7 @@ pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=ag
 
 from tavily_agent_toolkit import social_media_search, ModelConfig, ModelObject
 
-result = await social_media_search(
+result = social_media_search(
     query="Who is Leo Messi?",
     api_key="tvly-xxx",
 )
