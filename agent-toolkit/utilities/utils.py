@@ -372,6 +372,97 @@ def clean_raw_content(content: str) -> str:
     
     # === NAVIGATION AND BOILERPLATE PATTERNS ===
     
+    section_markers = [
+        r'^#?\s*Recent Posts\s*$',
+        r'^#?\s*Related Articles?\s*$', 
+        r'^#?\s*Related Posts?\s*$',
+        r'^#?\s*Recommended\s*(Articles?|Posts?)?\s*$',
+        r'^#?\s*About\s*(the\s*)?Author\s*$',
+        r'^#?\s*About\s*$',
+        r'^#?\s*Author Bio\s*$',
+        r'^#?\s*Share This\s*(Article|Post)?\s*$',
+        r'^#?\s*Comments?\s*(\(\d+\))?\s*$',
+        r'^#?\s*Leave a (Comment|Reply)\s*$',
+        r'^#?\s*Newsletter\s*(Signup|Subscribe)?\s*$',
+        r'^#?\s*Subscribe\s*$',
+        r'^#?\s*Follow Us\s*$',
+        r'^#?\s*Social Links?\s*$',
+        r'^#?\s*Footer\s*$',
+        r'^#?\s*Site\s*Map\s*$',
+        r'^#?\s*Quick Links?\s*$',
+        r'^\*?Learning Centers and Communities',
+        r'^CRN Answers',
+        r'^#?\s*Popular\s*(Posts?|Articles?)?\s*$',
+        r'^#?\s*Trending\s*(Now)?\s*$',
+        r'^#?\s*More From\s+',
+        r'^#?\s*You May Also Like\s*$',
+        r'^#?\s*Editors?\s*Picks?\s*$',
+    ]
+    
+    # Patterns to skip individual lines
+    skip_patterns = [
+        r'^\s*[\+\-\*▸►▶•◦‣]\s+\S.{0,25}\s*$',  # Menu items: bullet + short text (handles indentation)
+        r'^\*\s*\*',  # Double asterisk lines
+        r'^Expand All\s*\[\+\]',
+        r'^Collapse All\s*\[\-\]',
+        r'^#?\s*(BROADCAST ANALYSIS|RESEARCH NOTE|ANALYST INSIGHT):',
+        r'^\s*\|\s*\+\s*posts\s*Bio\s*$',  # Author bio markers
+        r'^\s*VP\s*&\s*(Principal\s*)?Analyst',
+        r'^\*.*sponsored by',
+        r'^Advertisement\s*$',
+        r'^Sponsored\s*(Content)?\s*$',
+        r'^Ad\s*$',
+        r'^\s*Share\s*(this)?\s*:?\s*$',
+        r'^\s*Print\s*$',
+        r'^\s*Email\s*$',
+        r'^\s*Copy\s*(Link)?\s*$',
+        r'^\s*Bookmark\s*$',
+        r'^Read\s+More\s*$',
+        r'^Load\s+More\s*$',
+        r'^Show\s+More\s*$',
+        r'^View\s+All\s*$',
+        r'^See\s+All\s*$',
+        r'^Back\s+to\s+Top\s*$',
+        r'^Skip\s+to\s+(Main\s+)?Content\s*$',
+        r'^Jump\s+to\s+',
+        r'^Toggle\s+(Menu|Navigation)\s*$',
+        r'^Open\s+Menu\s*$',
+        r'^Close\s+Menu\s*$',
+        r'^\s*Menu\s*$',
+        r'^\s*Navigation\s*$',
+        r'^\s*Search\s*$',
+        r'^\s*Login\s*$',
+        r'^\s*Sign\s*(In|Up|Out)\s*$',
+        r'^\s*Register\s*$',
+        r'^\s*Log\s*(In|Out)\s*$',
+        r'^©\s*\d{4}',  # Copyright lines
+        r'^All\s+Rights\s+Reserved',
+        r'^Privacy\s+Policy\s*$',
+        r'^Terms\s+(of\s+)?(Service|Use)\s*$',
+        r'^Cookie\s+(Policy|Settings)\s*$',
+        r'^Contact\s+Us\s*$',
+        r'^Accessibility\s*$',
+    ]
+    
+    # Social media platform patterns (individual lines)
+    social_platforms = [
+        r'^\s*facebook\s*$',
+        r'^\s*twitter\s*$',
+        r'^\s*x\s*$',
+        r'^\s*instagram\s*$',
+        r'^\s*youtube\s*$',
+        r'^\s*linkedin\s*$',
+        r'^\s*reddit\s*$',
+        r'^\s*pinterest\s*$',
+        r'^\s*whatsapp\s*$',
+        r'^\s*telegram\s*$',
+        r'^\s*tiktok\s*$',
+        r'^\s*snapchat\s*$',
+        r'^\s*flipboard\s*$',
+        r'^\s*tumblr\s*$',
+        r'^\s*mastodon\s*$',
+        r'^\s*threads\s*$',
+    ]
     # Remove common navigation/boilerplate lines
     boilerplate_patterns = [
         r'^Open menu\s*$',
@@ -460,32 +551,11 @@ def clean_raw_content(content: str) -> str:
         r'^Visit our corporate site.*$',
         r'^Contact Future\'s experts.*$',
     ]
+    all_patterns = section_markers + skip_patterns + social_platforms + boilerplate_patterns
     
-    for pattern in boilerplate_patterns:
+    for pattern in all_patterns:
         cleaned = re.sub(pattern, '', cleaned, flags=re.MULTILINE | re.IGNORECASE)
-    
-    # Remove lines that are just social media platform names or share buttons
-    social_patterns = [
-        r'^\s*facebook\s*$',
-        r'^\s*twitter\s*$',
-        r'^\s*x\s*$',
-        r'^\s*instagram\s*$',
-        r'^\s*youtube\s*$',
-        r'^\s*linkedin\s*$',
-        r'^\s*reddit\s*$',
-        r'^\s*pinterest\s*$',
-        r'^\s*whatsapp\s*$',
-        r'^\s*flipboard\s*$',
-        r'^\s*email\s*$',
-        r'^\s*link\s*$',
-        r'^\s*copied\s*$',
-        r'^\s*share\s*$',
-    ]
-    for pattern in social_patterns:
-        cleaned = re.sub(pattern, '', cleaned, flags=re.MULTILINE | re.IGNORECASE)
-    
-    # === LIST AND MENU CLEANUP ===
-    
+        
     # Remove empty list items (just bullets with no content)
     cleaned = re.sub(r'^\s*[\*\-\+]\s*$', '', cleaned, flags=re.MULTILINE)
     
@@ -535,6 +605,7 @@ def clean_raw_content(content: str) -> str:
     
     # Final collapse of multiple newlines
     cleaned = re.sub(r'\n{3,}', '\n\n', cleaned)
+
     
     return cleaned.strip()
 
