@@ -1,5 +1,7 @@
 # Tavily Agent Toolkit
 
+[![Current Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/tavily-ai/tavily-cookbook/releases/tag/v0.1.0)
+
 Build production-grade research agents with patterns we've battle-tested across customer deployments and our deep research endpoint.
 
 https://github.com/user-attachments/assets/0b636d61-441b-407a-b2ab-b700dd2d0d0b
@@ -41,7 +43,7 @@ Research primitives that combine Tavily endpoints with context engineering. Each
 
 # Example: Answer a question with comprehensive web research
 ```bash
-pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit 
+pip install "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@v0.1.0#subdirectory=agent-toolkit"
 ```
 
 ```python
@@ -114,19 +116,58 @@ Available in both Anthropic SDK and LangGraph implementations, plus Jupyter note
 
 ## Installation
 
-**Option 1: Install directly** (recommended for quick start)
+> **Current stable version: `v0.1.0`** — See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
+### Install Stable Release (Recommended)
 
 ```bash
-pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
+pip install "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@v0.1.0#subdirectory=agent-toolkit"
 ```
 
-Then import and use:
+### Install from Main Branch (Latest/Unstable)
+
+Get the latest code — may include breaking changes:
+
+```bash
+pip install "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@main#subdirectory=agent-toolkit"
+```
+
+### Version Pinning
+
+We use [git tags](https://github.com/tavily-ai/tavily-cookbook/tags) for version control. Replace `v0.1.0` with any available version.
+
+**How it works:**
+- `@v0.1.0` → Install exact version (stable, reproducible)
+- `@main` → Install latest from main branch (may have breaking changes)
+- `@abc123` → Install specific commit (for debugging/reproducibility)
+
+**In requirements.txt or pyproject.toml:**
+
+```text
+# Pinned to stable release (recommended)
+tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@v0.1.0#subdirectory=agent-toolkit
+
+# Track main branch (use with caution)
+tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@main#subdirectory=agent-toolkit
+```
+
+**Upgrading:**
+
+```bash
+# Upgrade to a new version
+pip install --upgrade "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@v0.2.0#subdirectory=agent-toolkit"
+
+# Force reinstall from main
+pip install --force-reinstall "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@main#subdirectory=agent-toolkit"
+```
+
+### Usage
 
 ```python
 from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_research
 ```
 
-**What's included in the install:**
+**What's included:**
 
 | Category | Exports |
 |----------|---------|
@@ -135,15 +176,15 @@ from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_
 | **Utilities** | `handle_research_stream`, `format_web_results`, `clean_raw_content`, `ainvoke_with_fallback`, and more |
 | **Models** | `ModelConfig`, `ModelObject`, `OutputSchema`, and various TypedDicts |
 
-We'll do our best to keep these tools up to date as patterns evolve and the Tavily API improves. Check back for updates or watch the repo.
+---
+
+### Alternative: Copy the Code
+
+For heavy customization, clone the repo and copy `agent-toolkit/` into your project.
 
 ---
 
-**Option 2: Copy the code** (recommended for customization)
-
-Clone the repo and copy `agent-toolkit/` into your project. Modify the tools and prompts to fit your needs.
-
----
+### LLM Providers
 
 For LLM features, install your preferred provider:
 
