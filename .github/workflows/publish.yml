@@ -35,23 +35,34 @@ jobs:
         run: |
           if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.version.outputs.version }} already exists, skipping publish"
+            echo "Tag v${{ steps.version.outputs.version }} already exists"
           else
             echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Tag v${{ steps.version.outputs.version }} does not exist, will publish"
+            echo "Tag v${{ steps.version.outputs.version }} does not exist"
+          fi
+
+      - name: Check if version exists on PyPI
+        id: pypi_check
+        run: |
+          if curl -s "https://pypi.org/pypi/tavily-agent-toolkit/${{ steps.version.outputs.version }}/json" | grep -q '"version"'; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Version ${{ steps.version.outputs.version }} already exists on PyPI"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Version ${{ steps.version.outputs.version }} does not exist on PyPI"
           fi
 
       - name: Install build tools
-        if: steps.tag_check.outputs.exists == 'false'
+        if: steps.tag_check.outputs.exists == 'false' && steps.pypi_check.outputs.exists == 'false'
         run: pip install build
 
       - name: Build package
-        if: steps.tag_check.outputs.exists == 'false'
+        if: steps.tag_check.outputs.exists == 'false' && steps.pypi_check.outputs.exists == 'false'
         working-directory: agent-toolkit
         run: python -m build
 
       - name: Publish to PyPI
-        if: steps.tag_check.outputs.exists == 'false'
+        if: steps.tag_check.outputs.exists == 'false' && steps.pypi_check.outputs.exists == 'false'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: agent-toolkit/dist/
