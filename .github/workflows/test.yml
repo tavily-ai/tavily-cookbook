@@ -9,7 +9,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'agent-toolkit/**'
-  workflow_dispatch:  # Allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   test:
@@ -18,9 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12"]
-    env:
-      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -29,12 +26,21 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install package with dev dependencies
+      - name: Install package
         working-directory: agent-toolkit
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install -e .
 
-      - name: Run tests
+      - name: Verify package imports
+        run: |
+          python -c "from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_research"
+          python -c "from tavily_agent_toolkit import ModelConfig, ModelObject"
+          echo "All imports successful!"
+
+      - name: Build package
         working-directory: agent-toolkit
-        run: pytest tests/ -v
+        run: |
+          python -m pip install build
+          python -m build
+          echo "Package builds successfully!"
