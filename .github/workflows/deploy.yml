@@ -1,23 +1,23 @@
-ame: Publish to CodeArtifact
+name: Deploy to CodeArtifact
 
 on:
   push:
     branches:
-      - feat/pypi-package
+      - main
   workflow_dispatch:
 
 permissions:
-    id-token: write
-    contents: read
+  id-token: write
+  contents: read
 
 jobs:
   publish-package:
     uses: tavily-ai/github-actions/.github/workflows/pypi-codeartifact-deploy.yml@main
     with:
-      python_version: '3.11'              # Optional: defaults to 3.11
-      package_directory: '.'              # Optional: defaults to root directory
-      codeartifact_domain: 'tavily'      # Optional: defaults to tavily
-      codeartifact_repository: 'tavily-internal-packages'  # Optional: defaults to tavily-internal-packages
+      python_version: "3.11"
+      package_directory: "."
+      codeartifact_domain: "tavily"
+      codeartifact_repository: "tavily-internal-packages"
     secrets:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
