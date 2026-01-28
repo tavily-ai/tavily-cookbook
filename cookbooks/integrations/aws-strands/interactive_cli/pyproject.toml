@@ -9,4 +9,8 @@ dependencies = [
     "strands-agents>=0.1.3",
     "strands-agents-tools>=0.1.2",
     "tavily-python>=0.7.17",
+    # Security: pinned minimum versions for transitive dependencies
+    "urllib3>=2.6.3",
+    "requests>=2.32.4",
+    "mcp>=1.23.0",
 ]

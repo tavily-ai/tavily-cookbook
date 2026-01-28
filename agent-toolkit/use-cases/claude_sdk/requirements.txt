@@ -7,3 +7,7 @@ anthropic>=0.40.0
 
 # Utilities
 python-dotenv>=1.0.0
+
+# Security: pinned minimum versions for transitive dependencies
+urllib3>=2.6.3
+requests>=2.32.4

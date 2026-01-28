@@ -1,8 +1,14 @@
 tavily-python
-langchain-chroma 
-langchain 
-langchain-tavily 
+langchain-chroma
+langchain
+langchain-tavily
 langgraph
-chromadb 
-pypdf 
+chromadb
+pypdf
 langchain-openai
+
+# Security: pinned minimum versions for transitive dependencies
+urllib3>=2.6.3
+requests>=2.32.4
+starlette>=0.49.1
+pillow>=11.3.0
