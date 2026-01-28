@@ -15,23 +15,29 @@ Have a request? Open an issue.
 | [**Cookbooks**](./cookbooks) | Click-through Jupyter notebooks for getting started with the Tavily API |
 | [**Agent Toolkit**](./agent-toolkit) | Production-ready tools, agents, and utilities to build research agents faster.<br>Install with `pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit` |
 
-## Claude Code Plugin
+## Agent Skills
 
-**For Claude Code developers:** Tavily skills are now available as an official Claude Code plugin at [**tavily-ai/tavily-plugins**](https://github.com/tavily-ai/tavily-plugins).
+**For AI coding agents:** Tavily provides official [agent skills](https://docs.tavily.com/documentation/agent-skills) that integrate web intelligence directly into your development workflow.
 
-The plugin serves two purposes:
+Available skills:
 
-- **Building with Tavily:** Includes comprehensive API reference documentation. Claude automatically uses this when you ask it to integrate Tavily into your code, making Claude a Tavily API expert.
-- **Web research in your terminal:** Access real-time web data, run deep research, and crawl documentation directly in your terminal.
+| Skill | Command | Purpose |
+|-------|---------|---------|
+| **Search** | `/search` | Web search with content snippets, scores, and metadata |
+| **Research** | `/research` | AI-synthesized research with citations and structured JSON output |
+| **Extract** | `/extract` | Clean content extraction from specific URLs |
+| **Crawl** | `/crawl` | Download websites as local markdown files |
+| **Best Practices** | `/tavily-best-practices` | Production-ready Tavily integration patterns |
 
-Install directly from the Claude Code marketplace:
+### Installation
 
+```bash
+npx skills add tavily-ai/skills
 ```
-/plugin marketplace add tavily-ai/tavily-plugins
-/plugin install tavily@tavily-plugins
-```
 
-See the [plugin repo](https://github.com/tavily-ai/tavily-plugins) for full installation instructions and usage examples.
+Then add your API key to your agent's environment settings (`TAVILY_API_KEY`).
+
+See the [skills repo](https://github.com/tavily-ai/skills) for full documentation, or the [`.claude-plugin`](https://github.com/tavily-ai/skills/tree/main/.claude-plugin) directory for Claude Code-specific configuration.
 
 ## Prerequisites
 
