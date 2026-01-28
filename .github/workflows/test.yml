@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'agent-toolkit/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'agent-toolkit/**'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        working-directory: agent-toolkit
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e .
+
+      - name: Verify package imports
+        run: |
+          python -c "from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_research"
+          python -c "from tavily_agent_toolkit import ModelConfig, ModelObject"
+          echo "All imports successful!"
+
+      - name: Build package
+        working-directory: agent-toolkit
+        run: |
+          python -m pip install build
+          python -m build
+          echo "Package builds successfully!"

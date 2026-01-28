@@ -1,5 +1,7 @@
 # Tavily Agent Toolkit
 
+[![PyPI version](https://img.shields.io/pypi/v/tavily-agent-toolkit.svg)](https://pypi.org/project/tavily-agent-toolkit/)
+
 Build production-grade research agents with patterns we've battle-tested across customer deployments and our deep research endpoint.
 
 https://github.com/user-attachments/assets/0b636d61-441b-407a-b2ab-b700dd2d0d0b
@@ -41,7 +43,7 @@ Research primitives that combine Tavily endpoints with context engineering. Each
 
 # Example: Answer a question with comprehensive web research
 ```bash
-pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit 
+pip install tavily-agent-toolkit
 ```
 
 ```python
@@ -114,19 +116,45 @@ Available in both Anthropic SDK and LangGraph implementations, plus Jupyter note
 
 ## Installation
 
-**Option 1: Install directly** (recommended for quick start)
+> See [CHANGELOG.md](CHANGELOG.md) for release notes.
+
+### Install from PyPI
 
 ```bash
-pip install git+https://github.com/tavily-ai/tavily-cookbook.git#subdirectory=agent-toolkit
+pip install tavily-agent-toolkit
 ```
 
-Then import and use:
+### Version Pinning
+
+```bash
+# Install specific version
+pip install tavily-agent-toolkit==0.1.0
+
+# Upgrade to latest
+pip install --upgrade tavily-agent-toolkit
+```
+
+**In requirements.txt:**
+
+```text
+tavily-agent-toolkit>=0.1.0
+```
+
+**In pyproject.toml:**
+
+```toml
+dependencies = [
+    "tavily-agent-toolkit>=0.1.0",
+]
+```
+
+### Usage
 
 ```python
 from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_research
 ```
 
-**What's included in the install:**
+**What's included:**
 
 | Category | Exports |
 |----------|---------|
@@ -135,15 +163,15 @@ from tavily_agent_toolkit import search_and_answer, crawl_and_summarize, hybrid_
 | **Utilities** | `handle_research_stream`, `format_web_results`, `clean_raw_content`, `ainvoke_with_fallback`, and more |
 | **Models** | `ModelConfig`, `ModelObject`, `OutputSchema`, and various TypedDicts |
 
-We'll do our best to keep these tools up to date as patterns evolve and the Tavily API improves. Check back for updates or watch the repo.
+---
+
+### Alternative: Copy the Code
+
+For heavy customization, clone the repo and copy `agent-toolkit/` into your project.
 
 ---
 
-**Option 2: Copy the code** (recommended for customization)
-
-Clone the repo and copy `agent-toolkit/` into your project. Modify the tools and prompts to fit your needs.
-
----
+### LLM Providers
 
 For LLM features, install your preferred provider:
 
