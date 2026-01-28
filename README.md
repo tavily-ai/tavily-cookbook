@@ -13,7 +13,7 @@ Have a request? Open an issue.
 | Directory | Purpose |
 |-----------|---------|
 | [**Cookbooks**](./cookbooks) | Click-through Jupyter notebooks for getting started with the Tavily API |
-| [**Agent Toolkit**](./agent-toolkit) | Production-ready tools, agents, and utilities to build research agents faster. Current version: **v0.1.0**<br><br>**Stable:** `pip install "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@v0.1.0#subdirectory=agent-toolkit"`<br>**Latest:** `pip install "tavily-agent-toolkit @ git+https://github.com/tavily-ai/tavily-cookbook.git@main#subdirectory=agent-toolkit"` |
+| [**Agent Toolkit**](./agent-toolkit) | Production-ready tools, agents, and utilities to build research agents faster.<br>Install: `pip install tavily-agent-toolkit` |
 
 ## Claude Code Plugin
 

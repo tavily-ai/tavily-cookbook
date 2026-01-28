@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2026-01-27
 
+### Changed
+
+- Package now published to PyPI: `pip install tavily-agent-toolkit`
+
 ### Added
 
 - Initial release of `tavily-agent-toolkit`
