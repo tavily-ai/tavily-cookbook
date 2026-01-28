@@ -41,14 +41,6 @@ jobs:
             echo "Tag v${{ steps.version.outputs.version }} does not exist, will publish"
           fi
 
-      - name: Create git tag
-        if: steps.tag_check.outputs.exists == 'false'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
-          git push origin "v${{ steps.version.outputs.version }}"
-
       - name: Install build tools
         if: steps.tag_check.outputs.exists == 'false'
         run: pip install build
@@ -64,3 +56,11 @@ jobs:
         with:
           packages-dir: agent-toolkit/dist/
           password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Create git tag
+        if: steps.tag_check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
