@@ -91,9 +91,9 @@ try:
             SearchQualityResult,
             BatchEvalResult,
             # Datasets
-            load_eval_dataset,
-            EvalTestCase,
-            EvalDataset,
+            DatasetEvaluator,
+            evaluate_dataset,
+            CSVDataset,
         )
     except ImportError:
         # Evals dependencies not available
@@ -155,7 +155,7 @@ __all__ = [
     "ContentAttributionResult",
     "SearchQualityResult",
     "BatchEvalResult",
-    "load_eval_dataset",
-    "EvalTestCase",
-    "EvalDataset",
+    "DatasetEvaluator",
+    "evaluate_dataset",
+    "CSVDataset",
 ]

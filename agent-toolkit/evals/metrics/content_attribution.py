@@ -5,9 +5,12 @@ Measures the breakdown of content sources in a report:
 - Internal RAG sources (company knowledge base)
 - Model prior knowledge (LLM's training data)
 
-This helps quantify the value of web data in research outputs.
+The report is split into sentences, then an LLM judge classifies each
+sentence as originating from a web source, internal source, or prior
+knowledge.
 """
 
+import re
 from typing import Any, Optional
 from urllib.parse import urlparse
 
@@ -26,199 +29,244 @@ except ImportError:
         ModelConfig = Any  # type: ignore
 
 
-class ContentSegment(BaseModel):
-    """A segment of content with its attribution."""
-    text: str = Field(description="The text segment from the report")
-    source_type: str = Field(description="Source type: 'web', 'internal', or 'prior_knowledge'")
-    source_url: Optional[str] = Field(default=None, description="URL if web source")
-    confidence: float = Field(description="Confidence in the attribution (0-1)")
-    reasoning: str = Field(description="Brief explanation for the attribution")
+# ---------------------------------------------------------------------------
+# Text utilities
+# ---------------------------------------------------------------------------
+
+def _split_into_sentences(text: str) -> list[str]:
+    """Split text into sentences (keeps only non-trivial ones)."""
+    parts = re.split(r"(?<=[.!?])\s+", text.strip())
+    return [s.strip() for s in parts if s.strip() and len(s.strip()) > 15]
 
 
-class ContentAttributionOutput(BaseModel):
-    """Output schema for content attribution analysis."""
-    segments: list[ContentSegment] = Field(description="List of content segments with attributions")
-    overall_web_ratio: float = Field(description="Estimated percentage of content from web sources (0-1)")
-    overall_internal_ratio: float = Field(description="Estimated percentage of content from internal sources (0-1)")
-    overall_prior_ratio: float = Field(description="Estimated percentage of content from model prior knowledge (0-1)")
+# ---------------------------------------------------------------------------
+# Pydantic output schemas for structured LLM response
+# ---------------------------------------------------------------------------
+
+class ChunkAttribution(BaseModel):
+    """Attribution judgment for a single report sentence."""
+    chunk_index: int = Field(description="0-based index of the sentence being classified")
+    source_type: str = Field(description="One of: 'web', 'internal', 'prior_knowledge'")
+    source_label: Optional[str] = Field(
+        default=None,
+        description="Label of the matched source (e.g. 'Web 1', 'Internal 2') or null for prior_knowledge",
+    )
+    confidence: float = Field(description="Confidence in the attribution (0.0 to 1.0)")
+    reasoning: str = Field(description="Brief explanation for why this attribution was chosen")
 
 
-ATTRIBUTION_PROMPT = """You are an expert at analyzing the provenance of content in research reports.
+class AttributionOutput(BaseModel):
+    """Structured output from the attribution judge."""
+    chunks: list[ChunkAttribution] = Field(
+        description="One entry per sentence in the report, in order"
+    )
 
-Your task is to determine what percentage of a report's content comes from:
-1. **Web sources**: Information that appears to come from the provided external web sources
-2. **Internal sources**: Information that would come from internal company/organization knowledge bases (if any internal sources are provided)
-3. **Prior knowledge**: Information that comes from the LLM's training data, general knowledge, or synthesis that goes beyond what sources provide
+
+# ---------------------------------------------------------------------------
+# System prompt
+# ---------------------------------------------------------------------------
+
+ATTRIBUTION_SYSTEM_PROMPT = """\
+You are an expert at tracing the provenance of sentences in research reports.
+
+You will receive:
+1. A list of **numbered sentences** extracted from a report.
+2. A list of **numbered sources** (web and/or internal).
+
+For EACH sentence, determine which source (if any) it most likely came from:
+- **web** — the sentence's information can be traced to one of the web sources.
+- **internal** — the sentence's information can be traced to one of the internal sources.
+- **prior_knowledge** — the sentence is general knowledge, definitions, or synthesis
+  that goes beyond what the provided sources contain.
 
 Guidelines:
-- Content that directly quotes or closely paraphrases a source = attributed to that source
-- Content that synthesizes multiple sources in a way clearly supported by those sources = web/internal
-- Content that provides context, definitions, or background not in sources = prior knowledge
-- Content that makes logical inferences not explicitly stated in sources = prior knowledge
-- When a claim could come from sources OR prior knowledge, favor source attribution if plausible
-
-Be precise in your analysis. The goal is to quantify how much value web/internal data adds to the output.
+- Direct quotes or close paraphrases of a source → attribute to that source.
+- Specific facts, numbers, or claims that appear in a source → attribute to that source.
+- General context, definitions, or background not present in any source → prior_knowledge.
+- When a claim could plausibly come from a source OR prior knowledge, favour source attribution.
+- Set confidence between 0.0 and 1.0 reflecting how certain you are.
 """
 
 
+# ---------------------------------------------------------------------------
+# Judge
+# ---------------------------------------------------------------------------
+
 class ContentAttributionJudge(BaseJudge):
-    """Judge for analyzing content attribution in reports."""
+    """LLM judge that classifies each report sentence by source."""
 
-    def __init__(
+    def __init__(self, model_config: "ModelConfig") -> None:
+        super().__init__(model_config, system_prompt=ATTRIBUTION_SYSTEM_PROMPT)
+
+    async def classify_chunks(
         self,
-        model_config: "ModelConfig",
-        attribution_prompt: Optional[str] = None,
-    ):
-        """Initialize the content attribution judge.
-
-        Args:
-            model_config: ModelConfig for the judge LLM
-            attribution_prompt: Custom prompt for attribution analysis
-        """
-        super().__init__(model_config, system_prompt=attribution_prompt or ATTRIBUTION_PROMPT)
-
-    async def analyze_attribution(
-        self,
-        report: str,
+        chunks: list[str],
         web_sources: list[dict],
-        internal_sources: Optional[list[dict]] = None,
-    ) -> ContentAttributionOutput:
-        """Analyze content attribution in a report.
+        internal_sources: list[dict],
+    ) -> AttributionOutput:
+        """Send all chunks + sources to the LLM in one call.
 
-        Args:
-            report: The report text to analyze
-            web_sources: List of web source dicts with 'url', 'title', 'content'
-            internal_sources: Optional list of internal source dicts
-
-        Returns:
-            ContentAttributionOutput with segment breakdowns
+        Returns structured ``AttributionOutput``.
         """
-        # Format sources
-        sources_text = "\n--- WEB SOURCES ---\n"
-        for i, source in enumerate(web_sources):
-            title = source.get("title", f"Web Source {i+1}")
-            url = source.get("url", "")
-            content = source.get("content", "")[:2000]  # Truncate for context limits
-            sources_text += f"\n[Web {i+1}] {title}\nURL: {url}\n{content}\n"
+        # ---- Build the user message ----
+        lines: list[str] = ["REPORT SENTENCES:"]
+        for i, chunk in enumerate(chunks):
+            lines.append(f"  [{i}] {chunk}")
+
+        lines.append("")
+        lines.append("WEB SOURCES:")
+        for i, src in enumerate(web_sources):
+            title = src.get("title", f"Web Source {i + 1}")
+            url = src.get("url", "")
+            content = src.get("content", "")[:2000]
+            lines.append(f"  [Web {i}] {title}  ({url})")
+            lines.append(f"    {content}")
 
         if internal_sources:
-            sources_text += "\n--- INTERNAL SOURCES ---\n"
-            for i, source in enumerate(internal_sources):
-                title = source.get("title", f"Internal Source {i+1}")
-                content = source.get("content", "")[:2000]
-                sources_text += f"\n[Internal {i+1}] {title}\n{content}\n"
+            lines.append("")
+            lines.append("INTERNAL SOURCES:")
+            for i, src in enumerate(internal_sources):
+                title = src.get("title", f"Internal Source {i + 1}")
+                content = src.get("content", "")[:2000]
+                lines.append(f"  [Internal {i}] {title}")
+                lines.append(f"    {content}")
 
-        messages = [
-            {"role": "user", "content": f"""Analyze the content attribution of this report:
+        lines.append("")
+        lines.append(
+            "Classify each sentence. Return one entry per sentence index."
+        )
 
-REPORT:
-{report}
-
-AVAILABLE SOURCES:
-{sources_text}
-
-For the report above, determine what percentage of the content comes from:
-1. Web sources (the external sources listed above)
-2. Internal sources (if any internal sources were provided)
-3. Prior knowledge (LLM training data, general knowledge, or synthesis beyond sources)
-
-Identify key segments and their likely sources."""},
-        ]
-
-        result = await self.invoke_llm(messages, output_schema=ContentAttributionOutput)
+        messages = [{"role": "user", "content": "\n".join(lines)}]
+        result: AttributionOutput = await self.invoke_llm(
+            messages, output_schema=AttributionOutput
+        )
         return result
 
-    async def judge(
-        self,
-        report: str,
-        web_sources: list[dict],
-        internal_sources: Optional[list[dict]] = None,
-        **kwargs: Any,
-    ) -> dict:
-        """Perform content attribution analysis.
+    async def judge(self, **kwargs: Any) -> dict:
+        """Required by BaseJudge ABC — delegates to classify_chunks."""
+        chunks = kwargs["chunks"]
+        web_sources = kwargs["web_sources"]
+        internal_sources = kwargs.get("internal_sources", [])
+        result = await self.classify_chunks(chunks, web_sources, internal_sources)
+        return {"attribution": result, "usage": self.get_usage()}
 
-        Args:
-            report: The report text
-            web_sources: List of web source dicts
-            internal_sources: Optional internal source dicts
-            **kwargs: Additional arguments (unused)
 
-        Returns:
-            Dict with attribution results and usage
-        """
-        result = await self.analyze_attribution(report, web_sources, internal_sources)
-        return {
-            "attribution": result,
-            "usage": self.get_usage(),
-        }
-
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
 
 async def compute_content_attribution_metrics(
     report: str,
     web_sources: list[dict],
     judge_model_config: "ModelConfig",
     internal_sources: Optional[list[dict]] = None,
-    attribution_prompt: Optional[str] = None,
+    **kwargs: Any,
 ) -> ContentAttributionResult:
-    """Compute content attribution metrics for a report.
+    """Compute content attribution by chunking the report then using an LLM judge.
 
-    This function analyzes what percentage of a report's content comes from:
-    - Web sources (external real-time data)
-    - Internal sources (RAG/knowledge base)
-    - Model prior knowledge (training data)
+    1. The report is split into sentences.
+    2. All sentences + sources are sent to the LLM in a single call.
+    3. The LLM classifies each sentence as *web*, *internal*, or
+       *prior_knowledge*.
+    4. Ratios are computed by character count of attributed sentences.
 
     Args:
-        report: The report text to analyze
-        web_sources: List of web source dicts with 'url', 'title', 'content'
-        judge_model_config: ModelConfig for the judge LLM
-        internal_sources: Optional list of internal RAG source dicts
-        attribution_prompt: Custom prompt for attribution analysis
+        report: The report text to analyse.
+        web_sources: Web source dicts (``url``, ``title``, ``content``).
+        judge_model_config: :class:`ModelConfig` for the judge LLM.
+        internal_sources: Optional internal/RAG source dicts
+            (``title``, ``content``).
+        **kwargs: Forwarded to the judge (unused today).
 
     Returns:
-        ContentAttributionResult with breakdown metrics
+        :class:`ContentAttributionResult` with ratio breakdowns and
+        per-sentence attribution details.
 
-    Example:
+    Example::
+
         result = await compute_content_attribution_metrics(
             report="According to recent data, AI spending increased 40%...",
             web_sources=[{"url": "...", "content": "..."}],
-            judge_model_config=ModelConfig(model=ModelObject(model="gpt-4o-mini")),
+            judge_model_config=ModelConfig(
+                model=ModelObject(model="gpt-4o-mini", api_key="..."),
+            ),
         )
         print(f"Web content: {result.web_content_ratio:.1%}")
-        print(f"Prior knowledge: {result.prior_knowledge_ratio:.1%}")
     """
-    judge = ContentAttributionJudge(
-        model_config=judge_model_config,
-        attribution_prompt=attribution_prompt,
-    )
+    internal_sources = internal_sources or []
 
-    judge_result = await judge.judge(
-        report=report,
-        web_sources=web_sources,
-        internal_sources=internal_sources,
-    )
+    # ---- 1. Chunk the report ----
+    chunks = _split_into_sentences(report)
+    if not chunks:
+        return ContentAttributionResult(
+            web_content_ratio=0.0,
+            internal_content_ratio=0.0,
+            prior_knowledge_ratio=1.0,
+            source_diversity=0.0,
+            unique_domains=0,
+            total_sources=len(web_sources) + len(internal_sources),
+            attribution_breakdown=[],
+            usage=EvalUsage(),
+        )
 
-    attribution = judge_result["attribution"]
-    usage = judge_result["usage"]
+    # ---- 2. LLM judge classifies each chunk ----
+    judge = ContentAttributionJudge(model_config=judge_model_config)
+    llm_result = await judge.classify_chunks(chunks, web_sources, internal_sources)
+    usage = judge.get_usage()
 
-    # Compute source diversity
-    unique_domains = _count_unique_domains(web_sources)
-    total_sources = len(web_sources) + (len(internal_sources) if internal_sources else 0)
-    source_diversity = unique_domains / total_sources if total_sources > 0 else 0.0
+    # ---- 3. Aggregate results ----
+    # Build a lookup from chunk index -> LLM judgment
+    judgments: dict[int, ChunkAttribution] = {}
+    for entry in llm_result.chunks:
+        judgments[entry.chunk_index] = entry
 
-    # Build attribution breakdown
-    attribution_breakdown = []
-    for segment in attribution.segments:
+    attribution_breakdown: list[dict] = []
+    web_chars = 0
+    internal_chars = 0
+    prior_chars = 0
+
+    for i, chunk in enumerate(chunks):
+        chunk_len = len(chunk)
+        entry = judgments.get(i)
+
+        if entry is None:
+            # LLM didn't return a judgment for this chunk — treat as prior
+            source_type = "prior_knowledge"
+            confidence = 0.0
+            source_ref = None
+        else:
+            source_type = entry.source_type
+            confidence = entry.confidence
+            source_ref = entry.source_label
+
+        if source_type == "web":
+            web_chars += chunk_len
+        elif source_type == "internal":
+            internal_chars += chunk_len
+        else:
+            prior_chars += chunk_len
+
         attribution_breakdown.append({
-            "text_preview": segment.text[:100] + "..." if len(segment.text) > 100 else segment.text,
-            "source_type": segment.source_type,
-            "source_url": segment.source_url,
-            "confidence": segment.confidence,
+            "text_preview": (chunk[:100] + "...") if len(chunk) > 100 else chunk,
+            "source_type": source_type,
+            "source_url": source_ref,
+            "confidence": round(confidence, 2),
         })
 
+    # ---- 4. Compute ratios ----
+    total_chars = web_chars + internal_chars + prior_chars or 1
+    web_ratio = web_chars / total_chars
+    internal_ratio = internal_chars / total_chars
+    prior_ratio = prior_chars / total_chars
+
+    unique_domains = _count_unique_domains(web_sources)
+    total_sources = len(web_sources) + len(internal_sources)
+    source_diversity = unique_domains / total_sources if total_sources > 0 else 0.0
+
     return ContentAttributionResult(
-        web_content_ratio=attribution.overall_web_ratio,
-        internal_content_ratio=attribution.overall_internal_ratio,
-        prior_knowledge_ratio=attribution.overall_prior_ratio,
+        web_content_ratio=web_ratio,
+        internal_content_ratio=internal_ratio,
+        prior_knowledge_ratio=prior_ratio,
         source_diversity=source_diversity,
         unique_domains=unique_domains,
         total_sources=total_sources,
@@ -227,16 +275,19 @@ async def compute_content_attribution_metrics(
     )
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
 def _count_unique_domains(sources: list[dict]) -> int:
     """Count unique domains from source URLs."""
-    domains = set()
+    domains: set[str] = set()
     for source in sources:
         url = source.get("url", "")
         if url:
             try:
                 parsed = urlparse(url)
                 domain = parsed.netloc.lower()
-                # Remove www. prefix for deduplication
                 if domain.startswith("www."):
                     domain = domain[4:]
                 domains.add(domain)
@@ -252,30 +303,30 @@ def compute_attribution_from_ratios(
     web_sources: Optional[list[dict]] = None,
     internal_sources: Optional[list[dict]] = None,
 ) -> ContentAttributionResult:
-    """Compute attribution result from pre-calculated ratios.
+    """Build a :class:`ContentAttributionResult` from pre-calculated ratios.
 
-    Use this when ratios have been computed externally or manually.
+    Use when ratios have been computed externally or manually.
 
     Args:
-        web_ratio: Ratio of content from web sources (0-1)
-        internal_ratio: Ratio of content from internal sources (0-1)
-        prior_ratio: Ratio of content from prior knowledge (0-1)
-        web_sources: Optional web sources for diversity calculation
-        internal_sources: Optional internal sources for count
+        web_ratio: Ratio of content from web sources (0-1).
+        internal_ratio: Ratio of content from internal sources (0-1).
+        prior_ratio: Ratio of content from prior knowledge (0-1).
+        web_sources: Optional web sources for diversity calculation.
+        internal_sources: Optional internal sources for count.
 
     Returns:
-        ContentAttributionResult with the provided ratios
+        ContentAttributionResult with the provided ratios.
     """
-    # Normalize ratios to sum to 1.0
     total = web_ratio + internal_ratio + prior_ratio
     if total > 0:
-        web_ratio = web_ratio / total
-        internal_ratio = internal_ratio / total
-        prior_ratio = prior_ratio / total
+        web_ratio /= total
+        internal_ratio /= total
+        prior_ratio /= total
 
-    # Compute source diversity
     unique_domains = _count_unique_domains(web_sources) if web_sources else 0
-    total_sources = (len(web_sources) if web_sources else 0) + (len(internal_sources) if internal_sources else 0)
+    total_sources = (len(web_sources) if web_sources else 0) + (
+        len(internal_sources) if internal_sources else 0
+    )
     source_diversity = unique_domains / total_sources if total_sources > 0 else 0.0
 
     return ContentAttributionResult(
