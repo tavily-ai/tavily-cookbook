@@ -1,5 +1,6 @@
 """Quality judge for evaluating generated queries and search effectiveness."""
 
+import asyncio
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
@@ -19,10 +20,11 @@ except ImportError:
 class QueryQualityScore(BaseModel):
     """Quality assessment for a generated search query."""
     query: str = Field(description="The query being evaluated")
-    specificity: float = Field(description="How specific and targeted the query is (0-1)")
-    search_effectiveness: float = Field(description="How effective this query would be for search (0-1)")
-    overall_score: float = Field(description="Overall quality score (0-1)")
-    suggestions: list[str] = Field(description="Suggestions for improving the query")
+    specificity: float = Field(description="How specific and targeted the query is (0-1). Use rubric: 0.9-1.0 highly specific, 0.7-0.8 reasonably specific, 0.5-0.6 moderate, 0.3-0.4 vague, 0.0-0.2 extremely vague")
+    search_effectiveness: float = Field(description="How well this works as a search query (0-1). Use rubric: 0.9-1.0 excellent keywords, 0.7-0.8 good, 0.5-0.6 fair/natural language, 0.3-0.4 poor, 0.0-0.2 very poor")
+    overall_score: float = Field(description="Combined quality assessment (0-1). Use rubric: 0.9-1.0 excellent, 0.7-0.8 good, 0.5-0.6 fair, 0.3-0.4 poor, 0.0-0.2 very poor")
+    reasoning: str = Field(default="", description="Brief explanation of the score — what works and what doesn't")
+    suggestions: list[str] = Field(description="Actionable suggestions: specific terms to add, remove, or change")
 
 
 class QuerySetEvaluation(BaseModel):
@@ -35,36 +37,70 @@ class QuerySetEvaluation(BaseModel):
 
 class ResultCoverageEvaluation(BaseModel):
     """Evaluation of search result coverage."""
-    topic_coverage: float = Field(description="How well results cover the topic (0-1)")
+    topic_coverage: float = Field(description="How well results cover the topic (0-1). Use rubric: 0.9-1.0 comprehensive, 0.7-0.8 good with minor gaps, 0.5-0.6 partial with significant gaps, 0.3-0.4 sparse, 0.0-0.2 very sparse")
     key_aspects_found: list[str] = Field(description="Key aspects of the topic found in results")
     key_aspects_missing: list[str] = Field(description="Key aspects not adequately covered")
-    redundancy_ratio: float = Field(description="Ratio of redundant/duplicate content (0-1)")
+    redundancy_ratio: float = Field(description="Ratio of redundant/duplicate content (0-1). Use rubric: 0.0-0.1 minimal, 0.2-0.3 low, 0.4-0.6 moderate, 0.7-0.8 high, 0.9-1.0 very high")
+    reasoning: str = Field(default="", description="Brief explanation of the coverage assessment")
 
 
-QUERY_QUALITY_PROMPT = """You are an expert at evaluating search query quality.
+QUERY_QUALITY_PROMPT = """You are an expert at evaluating search query quality for web search engines.
 
 A good search query should be:
 1. **Specific**: Targets exactly what information is needed
-2. **Search-optimized**: Uses terms likely to appear in relevant documents
+2. **Search-optimized**: Uses terms likely to appear in relevant documents (not full prose questions)
 3. **Unambiguous**: Clear meaning, not vague or overly broad
-4. **Appropriately scoped**: Neither too narrow nor too broad
+4. **Appropriately scoped**: Neither too narrow (zero results) nor too broad (noise)
+5. **Concise**: Under 400 characters — a web search query, not a long-form prompt
 
-Score queries on:
-- Specificity (0-1): How targeted is the query?
-- Search effectiveness (0-1): How likely to return good results?
-- Overall quality (0-1): Combined assessment
+Scoring guidelines for SPECIFICITY (how targeted is the query):
+- 0.9-1.0: Highly specific — targets a single, well-defined information need with precise terms
+- 0.7-0.8: Reasonably specific — clear focus but could be more targeted (e.g., missing region, time period, or metric)
+- 0.5-0.6: Moderate — somewhat broad or ambiguous, multiple interpretations possible
+- 0.3-0.4: Vague — very broad topic with no targeting, would return generic results
+- 0.0-0.2: Extremely vague — a single word or meaningless phrase
 
-Provide actionable suggestions for improvement.
+Scoring guidelines for SEARCH EFFECTIVENESS (how well this works as a search query):
+- 0.9-1.0: Excellent — uses precise, search-friendly keywords; appropriate scope; would return highly relevant results
+- 0.7-0.8: Good — solid keyword choice, will return mostly relevant results with some noise
+- 0.5-0.6: Fair — uses natural language or overly complex phrasing; mixed results likely
+- 0.3-0.4: Poor — too long, conversational, or keyword choices unlikely to match relevant pages
+- 0.0-0.2: Very poor — would not work as a search query (e.g., full paragraph, nonsensical)
+
+Scoring guidelines for OVERALL QUALITY (combined assessment):
+- 0.9-1.0: Excellent — a search expert would use this query as-is
+- 0.7-0.8: Good — solid query with minor room for improvement
+- 0.5-0.6: Fair — usable but needs refinement to get quality results
+- 0.3-0.4: Poor — significant issues that would hurt result quality
+- 0.0-0.2: Very poor — needs to be completely rewritten
+
+Be strict: use the full range of scores. A generic query like "AI" should score 0.1-0.2, not 0.5.
+Provide actionable suggestions for improvement — specifically what terms to add, remove, or change.
+Do not suggest boolean operators (AND/OR/NOT) or boolean-style syntax as improvements.
 """
 
-COVERAGE_PROMPT = """You are an expert at evaluating search result coverage.
+COVERAGE_PROMPT = """You are an expert at evaluating search result coverage for research tasks.
 
 Assess how well the search results cover the research topic:
-1. **Topic coverage**: Do results address the core questions?
-2. **Comprehensiveness**: Are different aspects/angles covered?
-3. **Redundancy**: How much duplicate information is there?
+1. **Topic coverage**: Do results address the core questions and sub-topics?
+2. **Comprehensiveness**: Are different aspects, perspectives, and angles covered?
+3. **Redundancy**: How much duplicate or near-duplicate information is there?
 
-Identify what's well-covered and what's missing.
+Scoring guidelines for TOPIC COVERAGE (0-1):
+- 0.9-1.0: Comprehensive — all major aspects of the topic are well-represented with substantive content
+- 0.7-0.8: Good — most important aspects covered, only minor gaps remain
+- 0.5-0.6: Partial — significant aspects are missing or only superficially covered
+- 0.3-0.4: Sparse — only covers a narrow slice of the topic, major gaps
+- 0.0-0.2: Very sparse — barely addresses the research topic
+
+Scoring guidelines for REDUNDANCY RATIO (0-1, where 0 = no redundancy, 1 = all redundant):
+- 0.0-0.1: Minimal — almost all results provide unique information
+- 0.2-0.3: Low — some overlap but mostly distinct content
+- 0.4-0.6: Moderate — noticeable duplication across results
+- 0.7-0.8: High — many results cover the same ground
+- 0.9-1.0: Very high — almost all results are redundant
+
+Be strict: use the full range of scores. Specifically list what aspects are found and what is missing.
 """
 
 
@@ -185,13 +221,17 @@ Assess topic coverage, identify what's covered well and what's missing, and esti
         """
         output = {"usage": self.get_usage()}
 
+        # Run query evaluation and coverage evaluation in parallel
+        tasks = {}
         if queries:
-            query_eval = await self.evaluate_queries(research_task, queries)
-            output["query_evaluation"] = query_eval
-
+            tasks["query_evaluation"] = self.evaluate_queries(research_task, queries)
         if results:
-            coverage_eval = await self.evaluate_coverage(research_task, results)
-            output["coverage_evaluation"] = coverage_eval
+            tasks["coverage_evaluation"] = self.evaluate_coverage(research_task, results)
+
+        if tasks:
+            results_list = await asyncio.gather(*tasks.values())
+            for key, result in zip(tasks.keys(), results_list):
+                output[key] = result
 
         output["usage"] = self.get_usage()
         return output

@@ -97,6 +97,7 @@ async def compute_search_quality_metrics(
                 "specificity": qs.specificity,
                 "search_effectiveness": qs.search_effectiveness,
                 "overall_score": qs.overall_score,
+                "reasoning": getattr(qs, "reasoning", ""),
                 "suggestions": qs.suggestions,
             })
 
