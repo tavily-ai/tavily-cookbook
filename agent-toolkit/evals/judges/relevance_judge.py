@@ -36,11 +36,18 @@ class SourceRelevanceScore(BaseModel):
     reasoning: str = Field(description="Brief explanation of the relevance score")
 
 
+class CoverageDetail(BaseModel):
+    """Detail on whether a specific query aspect is covered."""
+    aspect: str = Field(description="The query aspect")
+    covered: bool = Field(description="Whether this aspect is covered by the sources")
+    source_indices: list[int] = Field(description="Indices of sources that cover this aspect")
+
+
 class RelevanceEvaluationOutput(BaseModel):
     """Output schema for relevance evaluation."""
     source_scores: list[SourceRelevanceScore] = Field(description="Relevance scores for each source")
     answer_coverage: float = Field(description="Percentage of query aspects covered by sources (0-1)")
-    coverage_details: list[dict] = Field(description="Details on which aspects are covered")
+    coverage_details: list[CoverageDetail] = Field(description="Details on which aspects are covered")
 
 
 QUERY_ANALYSIS_PROMPT = """You are an expert at analyzing search queries.
