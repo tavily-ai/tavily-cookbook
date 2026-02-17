@@ -55,11 +55,9 @@ packages = [
     "tavily_agent_toolkit.agents",
     "tavily_agent_toolkit.utilities",
     "tavily_agent_toolkit.evals",
-    "tavily_agent_toolkit.evals.datasets",
     "tavily_agent_toolkit.evals.evaluators",
     "tavily_agent_toolkit.evals.judges",
     "tavily_agent_toolkit.evals.metrics",
-    "tavily_agent_toolkit.evals.reporters",
 ]
 
 [tool.setuptools.package-dir]
@@ -68,11 +66,9 @@ tavily_agent_toolkit = "."
 "tavily_agent_toolkit.agents" = "agents"
 "tavily_agent_toolkit.utilities" = "utilities"
 "tavily_agent_toolkit.evals" = "evals"
-"tavily_agent_toolkit.evals.datasets" = "evals/datasets"
 "tavily_agent_toolkit.evals.evaluators" = "evals/evaluators"
 "tavily_agent_toolkit.evals.judges" = "evals/judges"
 "tavily_agent_toolkit.evals.metrics" = "evals/metrics"
-"tavily_agent_toolkit.evals.reporters" = "evals/reporters"
 
 [tool.setuptools.package-data]
 "*" = ["*.md", "*.MD"]
