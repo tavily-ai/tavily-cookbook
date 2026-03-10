@@ -5,11 +5,11 @@ The Tavily Cookbook provides code and guides designed to help developers build w
 
 ## Table of recipes
 
-### Fundemantals
+### Fundamentals
 If you're new to working with the Tavily API, we recommend starting with our [Tavily API Fundamentals course](./getting-started/) to get a solid foundation. This tutorial series follows a step-by-step learning path with three stand-alone tutorials:
 - [Intro](./getting-started/search-extract-crawl.ipynb): Learn the **basics of web access**.
 - [Web Agent](./getting-started/web-agent-tutorial.ipynb): Build a **web agent** that can search, scrape, and crawl the web.
-- [Hybrid Agent](./getting-started/hybrid-agent-tutorial.ipynb):Build a system that **combines real-time web information with private knowledge base data**.
+- [Hybrid Agent](./getting-started/hybrid-agent-tutorial.ipynb): Build a system that **combines real-time web information with private knowledge base data**.
 
 ### Search
 - [Profile Search](./search/linkedin_profile_search.ipynb): Learn how to search and extract professional background information from LinkedIn profiles.

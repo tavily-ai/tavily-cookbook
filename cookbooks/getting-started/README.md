@@ -14,7 +14,7 @@ This tutorial series follows a step-by-step learning path with three stand-alone
 
 2. In [tutorial #2](./web-agent-tutorial.ipynb), we'll **build a web agent** that can search, scrape, and crawl the web.
 
-3. Finally, In [tutorial #3](./hybrid-agent-tutorial.ipynb), we'll develop a system that **combines real-time web information with private knowledge base data**.
+3. Finally, in [tutorial #3](./hybrid-agent-tutorial.ipynb), we'll develop a system that **combines real-time web information with private knowledge base data**.
 
 
 ## Directory Structure

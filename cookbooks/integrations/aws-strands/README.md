@@ -10,7 +10,7 @@ This tutorial is designed for Python developers who want to empower their Strand
 |--------------------|---------------------------------------------------|
 | Deep Web Research  | Use [Tavily](https://www.tavily.com/) to perform Web Search, URL Crawling and content extraction |
 | Document Enhancement | Augment existing files by incorporating additional information gathered through deep research|
-|Mardown Report Generation    | Generate a deep research report in Markdown format   |
+|Markdown Report Generation    | Generate a deep research report in Markdown format   |
 
 ## Agenda
 
