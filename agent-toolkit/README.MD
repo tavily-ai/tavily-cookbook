@@ -25,7 +25,7 @@ agent-toolkit/
 ├── utilities/       # Context engineering utilities
 ├── models.py        # Type definitions
 ├── tests/           # Test suite
-├── evals/           # Evaluation code and examples for your research agents (coming soon...)
+├── evals/           # Evaluation framework for research quality
 └── use-cases/       # Real-world implementation examples
 ```
 
@@ -113,6 +113,34 @@ Production-ready agent implementations demonstrating practical applications. Eac
 Available in both Anthropic SDK and LangGraph implementations, plus Jupyter notebooks for quick experimentation.
 
 > 📖 See [`use-cases/readme.md`](use-cases/readme.md) for full documentation and examples.
+
+## Evals
+
+Evaluate research quality across four dimensions: grounding, content attribution, relevance, and search quality.
+
+```python
+from tavily_agent_toolkit import ModelConfig, ModelObject
+from tavily_agent_toolkit.evals import evaluate_research
+
+result = await evaluate_research(
+    query="What are the latest AI trends?",
+    report=generated_report,
+    web_sources=sources,
+    judge_model_config=ModelConfig(model=ModelObject(model="gpt-4o-mini")),
+)
+
+print(f"Grounding: {result.grounding.grounding_ratio:.1%}")
+print(f"Relevance: {result.relevance.source_relevance_score:.2f}")
+```
+
+| Metric | Description |
+|--------|-------------|
+| **Grounding** | Claim-to-source attribution, hallucination detection |
+| **Content Attribution** | Web vs internal vs prior knowledge breakdown |
+| **Relevance** | Source-query alignment scoring |
+| **Search Quality** | Query effectiveness, coverage, credit efficiency |
+
+> 📖 See [`evals/README.md`](evals/README.md) for full documentation and tutorials.
 
 ## Installation
 

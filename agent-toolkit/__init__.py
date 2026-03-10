@@ -13,6 +13,11 @@ Tools:
 Agents:
     - hybrid_research: Combine internal RAG with web search
 
+Evals:
+    - evaluate_research: Evaluate research outputs for grounding, relevance, etc.
+    - ResearchEvaluator: Batch evaluation orchestrator
+    - Various metrics: grounding, relevance, content_attribution, search_quality
+
 Utilities:
     - Various helper functions for LLM invocation, content cleaning, etc.
 
@@ -64,6 +69,35 @@ try:
         format_web_results,
         handle_research_stream,
     )
+
+    # Evals module (optional - may not have all dependencies)
+    try:
+        from .evals import (
+            # Evaluators
+            evaluate_research,
+            ResearchEvaluator,
+            RetrievalEvaluator,
+            # Metrics
+            compute_grounding_metrics,
+            compute_relevance_metrics,
+            compute_content_attribution_metrics,
+            compute_search_quality_metrics,
+            # Models
+            EvalResult,
+            EvalUsage,
+            GroundingResult,
+            RelevanceResult,
+            ContentAttributionResult,
+            SearchQualityResult,
+            BatchEvalResult,
+            # Datasets
+            DatasetEvaluator,
+            evaluate_dataset,
+            CSVDataset,
+        )
+    except ImportError:
+        # Evals dependencies not available
+        pass
 except ImportError:
     # Direct import (e.g., pytest running from agent-toolkit directory)
     # Skip imports - tests should import from tavily_agent_toolkit package directly
@@ -106,4 +140,22 @@ __all__ = [
     "synthesize_results",
     "format_web_results",
     "handle_research_stream",
+    # Evals (optional)
+    "evaluate_research",
+    "ResearchEvaluator",
+    "RetrievalEvaluator",
+    "compute_grounding_metrics",
+    "compute_relevance_metrics",
+    "compute_content_attribution_metrics",
+    "compute_search_quality_metrics",
+    "EvalResult",
+    "EvalUsage",
+    "GroundingResult",
+    "RelevanceResult",
+    "ContentAttributionResult",
+    "SearchQualityResult",
+    "BatchEvalResult",
+    "DatasetEvaluator",
+    "evaluate_dataset",
+    "CSVDataset",
 ]
